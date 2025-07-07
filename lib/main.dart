@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
       title: 'Stickman Pet',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        fontFamily: 'Pixel',
       ),
       home: const MyHomePage(title: 'Penitente Pet'),
     );
@@ -58,10 +59,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   void feed() {
     setState(() {
       hunger = (hunger + 10).clamp(0, 100);
-      vitality = (vitality + 2).clamp(
-        0,
-        100,
-      ); // Exemplo: alimentar aumenta vitalidade
+      vitality = (vitality + 2).clamp(0, 100);
     });
   }
 
@@ -69,10 +67,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     setState(() {
       happiness = (happiness + 10).clamp(0, 100);
       energy = (energy - 5).clamp(0, 100);
-      vitality = (vitality + 3).clamp(
-        0,
-        100,
-      ); // Exemplo: brincar aumenta vitalidade
+      vitality = (vitality + 3).clamp(0, 100);
     });
   }
 
@@ -80,44 +75,37 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     setState(() {
       energy = (energy + 15).clamp(0, 100);
       hunger = (hunger - 5).clamp(0, 100);
-      vitality = (vitality + 5).clamp(
-        0,
-        100,
-      ); // Exemplo: dormir aumenta vitalidade
+      happiness = (happiness - 10).clamp(0, 100); // Agora dormir tira pontos de entretenimento
+      vitality = (vitality + 5).clamp(0, 100);
     });
+  }
+
+  Widget needIndicator({
+    required String iconPath,
+    required int value,
+    Color color = const Color(0xFFb29c48),
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Image.asset(iconPath, width: 28, height: 28),
+        SizedBox(
+          width: 32,
+          height: 6,
+          child: LinearProgressIndicator(
+            value: value / 100,
+            backgroundColor: Colors.grey[300],
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _stickmanAndStatus(VoidCallback action, String actionLabel) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Estatísticas em duas linhas, duas por linha
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/Icon_fé.jpg', width: 24, height: 24),
-            const SizedBox(width: 8),
-            Text('Fé: $hunger', style: const TextStyle(color: Color(0xFFb29c48))),
-            const SizedBox(width: 24),
-            Image.asset('assets/Icon_entretenimento.jpg', width: 24, height: 24),
-            const SizedBox(width: 8),
-            Text('Entretenimento: $happiness', style: const TextStyle(color: Color(0xFFb29c48))),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/Icon_fervor.jpg', width: 24, height: 24),
-            const SizedBox(width: 8),
-            Text('Fervor: $energy', style: const TextStyle(color: Color(0xFFb29c48))),
-            const SizedBox(width: 24),
-            Image.asset('assets/Icon_vitalidade.jpg', width: 24, height: 24),
-            const SizedBox(width: 8),
-            Text('Vitalidade: $vitality', style: const TextStyle(color: Color(0xFFb29c48))),
-          ],
-        ),
-        const SizedBox(height: 30),
         // Botão de ação acima do boneco
         ElevatedButton(
           onPressed: action,
@@ -141,114 +129,238 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   }
 
   List<Widget> get _pages => [
-    // Tela de Fé com background_igr
-    Stack(
-      children: [
-        Positioned.fill(
-          child: Center(
-            child: Image.asset(
+    // Igreja (background_igr)
+    Center(
+      child: SizedBox(
+        width: 1920,
+        height: 1080,
+        child: Stack(
+          children: [
+            Image.asset(
               'assets/background_igr.png',
               width: 1920,
               height: 1080,
               alignment: Alignment.center,
             ),
-          ),
+            // Personagem centralizado
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: feed,
+                    child: const Text('Igreja', style: TextStyle(color: Color(0xFFb29c48))),
+                  ),
+                  const SizedBox(height: 20),
+                  AnimatedBuilder(
+                    animation: _penitenteAnimation,
+                    builder: (context, child) {
+                      return Image.asset(
+                        'assets/Penitente_${_penitenteAnimation.value}.png',
+                        width: 220,
+                        height: 400,
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Align(
+              alignment: const FractionalOffset(0.08, 0.92),
+              child: IconButton(
+                icon: Image.asset('assets/Icon_espada.png', width: 64, height: 64),
+                onPressed: () {
+                  // ação da espada aqui
+                },
+              ),
+            ),
+            Align(
+              alignment: const FractionalOffset(0.92, 0.92),
+              child: IconButton(
+                icon: Image.asset('assets/Icon_loja.png', width: 64, height: 64),
+                onPressed: () {
+                  // ação da loja aqui
+                },
+              ),
+            ),
+          ],
         ),
-        _stickmanAndStatus(feed, 'Confessar'),
-        // Botão loja no canto inferior esquerdo
-        Positioned(
-          left: 16,
-          bottom: 16,
-          child: IconButton(
-            icon: Image.asset('assets/Icon_loja.png', width: 40, height: 40),
-            onPressed: () {
-              // ação da loja aqui
-            },
-          ),
-        ),
-      ],
+      ),
     ),
-    // Tela de Entretenimento com background_cav
-    Stack(
-      children: [
-        Positioned.fill(
-          child: Center(
-            child: Image.asset(
+    // Caverna (background_cav)
+    Center(
+      child: SizedBox(
+        width: 1920,
+        height: 1080,
+        child: Stack(
+          children: [
+            Image.asset(
               'assets/background_cav.png',
               width: 1920,
               height: 1080,
               alignment: Alignment.center,
             ),
-          ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: play,
+                    child: const Text('Caverna', style: TextStyle(color: Color(0xFFb29c48))),
+                  ),
+                  const SizedBox(height: 20),
+                  AnimatedBuilder(
+                    animation: _penitenteAnimation,
+                    builder: (context, child) {
+                      return Image.asset(
+                        'assets/Penitente_${_penitenteAnimation.value}.png',
+                        width: 220,
+                        height: 400,
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Align(
+              alignment: const FractionalOffset(0.08, 0.92),
+              child: IconButton(
+                icon: Image.asset('assets/Icon_espada.png', width: 64, height: 64),
+                onPressed: () {
+                  // ação da espada aqui
+                },
+              ),
+            ),
+            Align(
+              alignment: const FractionalOffset(0.92, 0.92),
+              child: IconButton(
+                icon: Image.asset('assets/Icon_loja.png', width: 64, height: 64),
+                onPressed: () {
+                  // ação da loja aqui
+                },
+              ),
+            ),
+          ],
         ),
-        _stickmanAndStatus(play, 'Entreter'),
-        Positioned(
-          left: 16,
-          bottom: 16,
-          child: IconButton(
-            icon: Image.asset('assets/Icon_loja.png', width: 40, height: 40),
-            onPressed: () {
-              // ação da loja aqui
-            },
-          ),
-        ),
-      ],
+      ),
     ),
-    // Tela de Dormir com background_mon
-    Stack(
-      children: [
-        Positioned.fill(
-          child: Center(
-            child: Image.asset(
+    // Montanhas (background_mon)
+    Center(
+      child: SizedBox(
+        width: 1920,
+        height: 1080,
+        child: Stack(
+          children: [
+            Image.asset(
               'assets/background_mon.png',
               width: 1920,
               height: 1080,
               alignment: Alignment.center,
             ),
-          ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: sleep,
+                    child: const Text('Montanhas', style: TextStyle(color: Color(0xFFb29c48))),
+                  ),
+                  const SizedBox(height: 20),
+                  AnimatedBuilder(
+                    animation: _penitenteAnimation,
+                    builder: (context, child) {
+                      return Image.asset(
+                        'assets/Penitente_${_penitenteAnimation.value}.png',
+                        width: 220,
+                        height: 400,
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Align(
+              alignment: const FractionalOffset(0.08, 0.92),
+              child: IconButton(
+                icon: Image.asset('assets/Icon_espada.png', width: 64, height: 64),
+                onPressed: () {
+                  // ação da espada aqui
+                },
+              ),
+            ),
+            Align(
+              alignment: const FractionalOffset(0.92, 0.92),
+              child: IconButton(
+                icon: Image.asset('assets/Icon_loja.png', width: 64, height: 64),
+                onPressed: () {
+                  // ação da loja aqui
+                },
+              ),
+            ),
+          ],
         ),
-        _stickmanAndStatus(sleep, 'Descansar'),
-        Positioned(
-          left: 16,
-          bottom: 16,
-          child: IconButton(
-            icon: Image.asset('assets/Icon_loja.png', width: 40, height: 40),
-            onPressed: () {
-              // ação da loja aqui
-            },
-          ),
-        ),
-      ],
+      ),
     ),
-    // Tela de Vitalidade com background_alb
-    Stack(
-      children: [
-        Positioned.fill(
-          child: Center(
-            child: Image.asset(
+    // Albero (background_alb)
+    Center(
+      child: SizedBox(
+        width: 1920,
+        height: 1080,
+        child: Stack(
+          children: [
+            Image.asset(
               'assets/background_alb.png',
               width: 1920,
               height: 1080,
               alignment: Alignment.center,
             ),
-          ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        vitality = (vitality + 10).clamp(0, 100);
+                      });
+                    },
+                    child: const Text('Albero', style: TextStyle(color: Color(0xFFb29c48))),
+                  ),
+                  const SizedBox(height: 20),
+                  AnimatedBuilder(
+                    animation: _penitenteAnimation,
+                    builder: (context, child) {
+                      return Image.asset(
+                        'assets/Penitente_${_penitenteAnimation.value}.png',
+                        width: 220,
+                        height: 400,
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Align(
+              alignment: const FractionalOffset(0.08, 0.92),
+              child: IconButton(
+                icon: Image.asset('assets/Icon_espada.png', width: 64, height: 64),
+                onPressed: () {
+                  // ação da espada aqui
+                },
+              ),
+            ),
+            Align(
+              alignment: const FractionalOffset(0.92, 0.92),
+              child: IconButton(
+                icon: Image.asset('assets/Icon_loja.png', width: 64, height: 64),
+                onPressed: () {
+                  // ação da loja aqui
+                },
+              ),
+            ),
+          ],
         ),
-        _stickmanAndStatus(() {
-          setState(() {
-            vitality = (vitality + 10).clamp(0, 100);
-          });
-        }, 'Aumentar Vitalidade'),
-        Positioned(
-          left: 16,
-          bottom: 16,
-          child: IconButton(
-            icon: Image.asset('assets/Icon_loja.png', width: 40, height: 40),
-            onPressed: () {
-              // ação da loja aqui
-            },
-          ),
-        ),
-      ],
+      ),
     ),
   ];
 
@@ -257,21 +369,19 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        leadingWidth: 10, // Reduz a largura do leading para centralizar mais
-        leading: null, // Remove o leading para liberar espaço
+        leadingWidth: 10,
+        leading: null,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Ícones centralizados
-            Image.asset('assets/faith.jpeg', width: 28, height: 28),
-            const SizedBox(width: 4),
-            Image.asset('assets/entertainment.jpeg', width: 28, height: 28),
-            const SizedBox(width: 4),
-            Image.asset('assets/fervor.jpeg', width: 28, height: 28),
-            const SizedBox(width: 4),
-            Image.asset('assets/vitality.jpeg', width: 28, height: 28),
+            needIndicator(iconPath: 'assets/Icon_fé.jpg', value: hunger),
+            const SizedBox(width: 8),
+            needIndicator(iconPath: 'assets/Icon_entretenimento.jpg', value: happiness),
+            const SizedBox(width: 8),
+            needIndicator(iconPath: 'assets/Icon_fervor.jpg', value: energy),
+            const SizedBox(width: 8),
+            needIndicator(iconPath: 'assets/Icon_vitalidade.jpg', value: vitality),
             const SizedBox(width: 16),
-            // Título e navegação
             IconButton(
               icon: const Icon(Icons.arrow_left),
               color: Colors.white,
@@ -305,7 +415,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       ),
       body: PageView(
         controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(), // impede deslizar
+        physics: const NeverScrollableScrollPhysics(),
         onPageChanged: (index) {
           setState(() {
             _selectedIndex = index;
@@ -348,7 +458,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   String _getPageTitle(int index) {
     switch (index) {
       case 0:
-        return 'Fé';
+        return 'Igreja';
       case 1:
         return 'Brincar';
       case 2:
@@ -365,8 +475,7 @@ class StickmanPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors
-          .blue // Alterado para azul para melhor visibilidade
+      ..color = Colors.blue
       ..strokeWidth = 4
       ..style = PaintingStyle.stroke;
 

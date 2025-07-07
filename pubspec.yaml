@@ -72,6 +72,7 @@ flutter:
     - assets/Frasco_2.png
     - assets/Frasco_3.png
     - assets/Frasco_4.png
+    - assets/fonts/PressStart2P-Regular.ttf
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
