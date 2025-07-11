@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\ifc.CAMPUS\Desktop\Post-Vitam-main\Post-Vitam-main\build\windows\x64\CMakeFiles\e5d0de10494f4ed421d9a0816e87d57e\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{95F62394-9D35-3EB7-8091-510949EC2508}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

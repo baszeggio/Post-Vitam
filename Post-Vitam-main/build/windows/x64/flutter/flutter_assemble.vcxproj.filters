@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\ifc.CAMPUS\Desktop\Post-Vitam-main\Post-Vitam-main\build\windows\x64\CMakeFiles\a0b078e89b9f908208a0c7d0c2c29fa0\flutter_windows.dll.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\ifc.CAMPUS\Desktop\Post-Vitam-main\Post-Vitam-main\build\windows\x64\CMakeFiles\e5d0de10494f4ed421d9a0816e87d57e\flutter_assemble.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\ifc.CAMPUS\Desktop\Post-Vitam-main\Post-Vitam-main\windows\flutter\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\ifc.CAMPUS\Desktop\Post-Vitam-main\Post-Vitam-main\build\windows\x64\flutter\CMakeFiles\flutter_assemble" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{95F62394-9D35-3EB7-8091-510949EC2508}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
