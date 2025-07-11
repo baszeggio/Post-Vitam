@@ -10,12 +10,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Stickman Pet',
+      title: 'Post Vitam',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         fontFamily: 'Pixel',
       ),
-      home: const MyHomePage(title: 'Penitente Pet'),
+      home: const MyHomePage(title: 'Post Vitam Pet'),
     );
   }
 }
@@ -28,7 +28,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
   int hunger = 50;
   int happiness = 50;
   int energy = 50;
@@ -47,7 +48,10 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       duration: const Duration(milliseconds: 500),
     )..repeat(reverse: true);
 
-    _penitenteAnimation = IntTween(begin: 1, end: 2).animate(_penitenteController);
+    _penitenteAnimation = IntTween(
+      begin: 1,
+      end: 2,
+    ).animate(_penitenteController);
   }
 
   @override
@@ -75,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     setState(() {
       energy = (energy + 15).clamp(0, 100);
       hunger = (hunger - 5).clamp(0, 100);
-      happiness = (happiness - 10).clamp(0, 100); // Agora dormir tira pontos de entretenimento
+      happiness = (happiness - 10).clamp(0, 100);
       vitality = (vitality + 5).clamp(0, 100);
     });
   }
@@ -85,334 +89,257 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     required int value,
     Color color = const Color(0xFFb29c48),
   }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Image.asset(iconPath, width: 28, height: 28),
-        SizedBox(
-          width: 32,
-          height: 6,
-          child: LinearProgressIndicator(
-            value: value / 100,
-            backgroundColor: Colors.grey[300],
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-          ),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        final iconSize = screenWidth < 600 ? 24.0 : 28.0;
+        final barWidth = screenWidth < 600 ? 28.0 : 32.0;
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(iconPath, width: iconSize, height: iconSize),
+            const SizedBox(height: 2),
+            SizedBox(
+              width: barWidth,
+              height: 6,
+              child: LinearProgressIndicator(
+                value: value / 100,
+                backgroundColor: Colors.grey[300],
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _stickmanAndStatus(VoidCallback action, String actionLabel) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Botão de ação acima do boneco
-        ElevatedButton(
-          onPressed: action,
-          child: Text(actionLabel, style: const TextStyle(color: Color(0xFFb29c48))),
-        ),
-        const SizedBox(height: 20),
-        // Boneco maior
-        AnimatedBuilder(
-          animation: _penitenteAnimation,
-          builder: (context, child) {
-            return Image.asset(
-              'assets/Penitente_${_penitenteAnimation.value}.png',
-              width: 220,
-              height: 400,
-            );
-          },
-        ),
-        const SizedBox(height: 10),
-      ],
+  Widget _buildResponsivePage({
+    required String backgroundAsset,
+    required String buttonText,
+    required VoidCallback onPressed,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        final screenHeight = constraints.maxHeight;
+        final isPortrait = screenHeight > screenWidth;
+
+        // Tamanhos adaptativos
+        final characterWidth = isPortrait
+            ? screenWidth * 0.4
+            : screenHeight * 0.3;
+        final characterHeight = characterWidth * 1.8; // Mantém proporção
+
+        final buttonFontSize = screenWidth < 600 ? 12.0 : 16.0;
+        final iconSize = screenWidth < 600 ? 48.0 : 64.0;
+
+        return Container(
+          width: screenWidth,
+          height: screenHeight,
+          child: Stack(
+            children: [
+              // Background image responsivo
+              Positioned.fill(
+                child: Image.asset(
+                  backgroundAsset,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                ),
+              ),
+
+              // Personagem centralizado
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Botão de ação
+                    ElevatedButton(
+                      onPressed: onPressed,
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth < 600 ? 16 : 24,
+                          vertical: screenWidth < 600 ? 8 : 12,
+                        ),
+                      ),
+                      child: Text(
+                        buttonText,
+                        style: TextStyle(
+                          color: const Color(0xFFb29c48),
+                          fontSize: buttonFontSize,
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: screenHeight * 0.02),
+
+                    // Personagem animado
+                    AnimatedBuilder(
+                      animation: _penitenteAnimation,
+                      builder: (context, child) {
+                        return Image.asset(
+                          'assets/Penitente_${_penitenteAnimation.value}.png',
+                          width: characterWidth,
+                          height: characterHeight,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              // Ícones nos cantos - posicionamento responsivo
+              Positioned(
+                left: screenWidth * 0.05,
+                bottom: screenHeight * 0.05,
+                child: IconButton(
+                  icon: Image.asset(
+                    'assets/Icon_espada.png',
+                    width: iconSize,
+                    height: iconSize,
+                  ),
+                  onPressed: () {
+                    // ação da espada
+                  },
+                ),
+              ),
+
+              Positioned(
+                right: screenWidth * 0.05,
+                bottom: screenHeight * 0.05,
+                child: IconButton(
+                  icon: Image.asset(
+                    'assets/Icon_loja.png',
+                    width: iconSize,
+                    height: iconSize,
+                  ),
+                  onPressed: () {
+                    // ação da loja
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   List<Widget> get _pages => [
-    // Igreja (background_igr)
-    Center(
-      child: SizedBox(
-        width: 1920,
-        height: 1080,
-        child: Stack(
-          children: [
-            Image.asset(
-              'assets/background_igr.png',
-              width: 1920,
-              height: 1080,
-              alignment: Alignment.center,
-            ),
-            // Personagem centralizado
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: feed,
-                    child: const Text('Igreja', style: TextStyle(color: Color(0xFFb29c48))),
-                  ),
-                  const SizedBox(height: 20),
-                  AnimatedBuilder(
-                    animation: _penitenteAnimation,
-                    builder: (context, child) {
-                      return Image.asset(
-                        'assets/Penitente_${_penitenteAnimation.value}.png',
-                        width: 220,
-                        height: 400,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Align(
-              alignment: const FractionalOffset(0.08, 0.92),
-              child: IconButton(
-                icon: Image.asset('assets/Icon_espada.png', width: 64, height: 64),
-                onPressed: () {
-                  // ação da espada aqui
-                },
-              ),
-            ),
-            Align(
-              alignment: const FractionalOffset(0.92, 0.92),
-              child: IconButton(
-                icon: Image.asset('assets/Icon_loja.png', width: 64, height: 64),
-                onPressed: () {
-                  // ação da loja aqui
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    // Igreja
+    _buildResponsivePage(
+      backgroundAsset: 'assets/background_igr.png',
+      buttonText: 'Igreja',
+      onPressed: feed,
     ),
-    // Caverna (background_cav)
-    Center(
-      child: SizedBox(
-        width: 1920,
-        height: 1080,
-        child: Stack(
-          children: [
-            Image.asset(
-              'assets/background_cav.png',
-              width: 1920,
-              height: 1080,
-              alignment: Alignment.center,
-            ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: play,
-                    child: const Text('Caverna', style: TextStyle(color: Color(0xFFb29c48))),
-                  ),
-                  const SizedBox(height: 20),
-                  AnimatedBuilder(
-                    animation: _penitenteAnimation,
-                    builder: (context, child) {
-                      return Image.asset(
-                        'assets/Penitente_${_penitenteAnimation.value}.png',
-                        width: 220,
-                        height: 400,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Align(
-              alignment: const FractionalOffset(0.08, 0.92),
-              child: IconButton(
-                icon: Image.asset('assets/Icon_espada.png', width: 64, height: 64),
-                onPressed: () {
-                  // ação da espada aqui
-                },
-              ),
-            ),
-            Align(
-              alignment: const FractionalOffset(0.92, 0.92),
-              child: IconButton(
-                icon: Image.asset('assets/Icon_loja.png', width: 64, height: 64),
-                onPressed: () {
-                  // ação da loja aqui
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+
+    // Caverna
+    _buildResponsivePage(
+      backgroundAsset: 'assets/background_cav.png',
+      buttonText: 'Caverna',
+      onPressed: play,
     ),
-    // Montanhas (background_mon)
-    Center(
-      child: SizedBox(
-        width: 1920,
-        height: 1080,
-        child: Stack(
-          children: [
-            Image.asset(
-              'assets/background_mon.png',
-              width: 1920,
-              height: 1080,
-              alignment: Alignment.center,
-            ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: sleep,
-                    child: const Text('Montanhas', style: TextStyle(color: Color(0xFFb29c48))),
-                  ),
-                  const SizedBox(height: 20),
-                  AnimatedBuilder(
-                    animation: _penitenteAnimation,
-                    builder: (context, child) {
-                      return Image.asset(
-                        'assets/Penitente_${_penitenteAnimation.value}.png',
-                        width: 220,
-                        height: 400,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Align(
-              alignment: const FractionalOffset(0.08, 0.92),
-              child: IconButton(
-                icon: Image.asset('assets/Icon_espada.png', width: 64, height: 64),
-                onPressed: () {
-                  // ação da espada aqui
-                },
-              ),
-            ),
-            Align(
-              alignment: const FractionalOffset(0.92, 0.92),
-              child: IconButton(
-                icon: Image.asset('assets/Icon_loja.png', width: 64, height: 64),
-                onPressed: () {
-                  // ação da loja aqui
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+
+    // Montanhas
+    _buildResponsivePage(
+      backgroundAsset: 'assets/background_mon.png',
+      buttonText: 'Montanhas',
+      onPressed: sleep,
     ),
-    // Albero (background_alb)
-    Center(
-      child: SizedBox(
-        width: 1920,
-        height: 1080,
-        child: Stack(
-          children: [
-            Image.asset(
-              'assets/background_alb.png',
-              width: 1920,
-              height: 1080,
-              alignment: Alignment.center,
-            ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        vitality = (vitality + 10).clamp(0, 100);
-                      });
-                    },
-                    child: const Text('Albero', style: TextStyle(color: Color(0xFFb29c48))),
-                  ),
-                  const SizedBox(height: 20),
-                  AnimatedBuilder(
-                    animation: _penitenteAnimation,
-                    builder: (context, child) {
-                      return Image.asset(
-                        'assets/Penitente_${_penitenteAnimation.value}.png',
-                        width: 220,
-                        height: 400,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Align(
-              alignment: const FractionalOffset(0.08, 0.92),
-              child: IconButton(
-                icon: Image.asset('assets/Icon_espada.png', width: 64, height: 64),
-                onPressed: () {
-                  // ação da espada aqui
-                },
-              ),
-            ),
-            Align(
-              alignment: const FractionalOffset(0.92, 0.92),
-              child: IconButton(
-                icon: Image.asset('assets/Icon_loja.png', width: 64, height: 64),
-                onPressed: () {
-                  // ação da loja aqui
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+
+    // Albero
+    _buildResponsivePage(
+      backgroundAsset: 'assets/background_alb.png',
+      buttonText: 'Albero',
+      onPressed: () {
+        setState(() {
+          vitality = (vitality + 10).clamp(0, 100);
+        });
+      },
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         leadingWidth: 10,
         leading: null,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            needIndicator(iconPath: 'assets/Icon_fé.jpg', value: hunger),
-            const SizedBox(width: 8),
-            needIndicator(iconPath: 'assets/Icon_entretenimento.jpg', value: happiness),
-            const SizedBox(width: 8),
-            needIndicator(iconPath: 'assets/Icon_fervor.jpg', value: energy),
-            const SizedBox(width: 8),
-            needIndicator(iconPath: 'assets/Icon_vitalidade.jpg', value: vitality),
-            const SizedBox(width: 16),
-            IconButton(
-              icon: const Icon(Icons.arrow_left),
-              color: Colors.white,
-              onPressed: () {
-                setState(() {
-                  _selectedIndex =
-                      (_selectedIndex - 1 + _pages.length) % _pages.length;
-                  _pageController.jumpToPage(_selectedIndex);
-                });
-              },
-            ),
-            const SizedBox(width: 8),
-            Text(
-              _getPageTitle(_selectedIndex),
-              style: const TextStyle(fontSize: 20),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              icon: const Icon(Icons.arrow_right),
-              color: Colors.white,
-              onPressed: () {
-                setState(() {
-                  _selectedIndex = (_selectedIndex + 1) % _pages.length;
-                  _pageController.jumpToPage(_selectedIndex);
-                });
-              },
-            ),
-          ],
+        title: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Indicadores de necessidades
+                  needIndicator(iconPath: 'assets/Icon_fé.jpg', value: hunger),
+                  SizedBox(width: isSmallScreen ? 4 : 8),
+                  needIndicator(
+                    iconPath: 'assets/Icon_entretenimento.jpg',
+                    value: happiness,
+                  ),
+                  SizedBox(width: isSmallScreen ? 4 : 8),
+                  needIndicator(
+                    iconPath: 'assets/Icon_fervor.jpg',
+                    value: energy,
+                  ),
+                  SizedBox(width: isSmallScreen ? 4 : 8),
+                  needIndicator(
+                    iconPath: 'assets/Icon_vitalidade.jpg',
+                    value: vitality,
+                  ),
+                  SizedBox(width: isSmallScreen ? 8 : 16),
+
+                  // Controles de navegação
+                  IconButton(
+                    icon: Icon(Icons.arrow_left, size: isSmallScreen ? 20 : 24),
+                    color: Colors.white,
+                    onPressed: () {
+                      setState(() {
+                        _selectedIndex =
+                            (_selectedIndex - 1 + _pages.length) %
+                            _pages.length;
+                        _pageController.jumpToPage(_selectedIndex);
+                      });
+                    },
+                  ),
+
+                  SizedBox(width: isSmallScreen ? 4 : 8),
+
+                  Text(
+                    _getPageTitle(_selectedIndex),
+                    style: TextStyle(fontSize: isSmallScreen ? 16 : 20),
+                  ),
+
+                  SizedBox(width: isSmallScreen ? 4 : 8),
+
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_right,
+                      size: isSmallScreen ? 20 : 24,
+                    ),
+                    color: Colors.white,
+                    onPressed: () {
+                      setState(() {
+                        _selectedIndex = (_selectedIndex + 1) % _pages.length;
+                        _pageController.jumpToPage(_selectedIndex);
+                      });
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
         ),
         centerTitle: true,
       ),
+
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
@@ -423,33 +350,39 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
         },
         children: _pages,
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 40),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_left, size: 32),
-              color: Colors.deepPurple,
-              onPressed: () {
-                setState(() {
-                  _selectedIndex =
-                      (_selectedIndex - 1 + _pages.length) % _pages.length;
-                  _pageController.jumpToPage(_selectedIndex);
-                });
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.arrow_right, size: 32),
-              color: Colors.deepPurple,
-              onPressed: () {
-                setState(() {
-                  _selectedIndex = (_selectedIndex + 1) % _pages.length;
-                  _pageController.jumpToPage(_selectedIndex);
-                });
-              },
-            ),
-          ],
+
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            vertical: 8.0,
+            horizontal: isSmallScreen ? 20 : 40,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_left, size: isSmallScreen ? 28 : 32),
+                color: Colors.deepPurple,
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex =
+                        (_selectedIndex - 1 + _pages.length) % _pages.length;
+                    _pageController.jumpToPage(_selectedIndex);
+                  });
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.arrow_right, size: isSmallScreen ? 28 : 32),
+                color: Colors.deepPurple,
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex = (_selectedIndex + 1) % _pages.length;
+                    _pageController.jumpToPage(_selectedIndex);
+                  });
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -469,50 +402,4 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
         return '';
     }
   }
-}
-
-class StickmanPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.blue
-      ..strokeWidth = 4
-      ..style = PaintingStyle.stroke;
-
-    // Cabeça
-    canvas.drawCircle(Offset(size.width / 2, 30), 20, paint);
-    // Corpo
-    canvas.drawLine(
-      Offset(size.width / 2, 50),
-      Offset(size.width / 2, 120),
-      paint,
-    );
-    // Braço esquerdo
-    canvas.drawLine(
-      Offset(size.width / 2, 70),
-      Offset(size.width / 2 - 30, 100),
-      paint,
-    );
-    // Braço direito
-    canvas.drawLine(
-      Offset(size.width / 2, 70),
-      Offset(size.width / 2 + 30, 100),
-      paint,
-    );
-    // Perna esquerda
-    canvas.drawLine(
-      Offset(size.width / 2, 120),
-      Offset(size.width / 2 - 20, 170),
-      paint,
-    );
-    // Perna direita
-    canvas.drawLine(
-      Offset(size.width / 2, 120),
-      Offset(size.width / 2 + 20, 170),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
