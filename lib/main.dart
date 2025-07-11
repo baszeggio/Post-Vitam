@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+import 'dao/postvitamdao.dart';
+import 'models/pet_status.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,7 +33,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   int hunger = 50;
   int happiness = 50;
   int energy = 50;
@@ -39,10 +43,15 @@ class _MyHomePageState extends State<MyHomePage>
 
   late AnimationController _penitenteController;
   late Animation<int> _penitenteAnimation;
+  final DatabaseHelper _dbHelper = DatabaseHelper();
+
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
     _penitenteController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -52,12 +61,62 @@ class _MyHomePageState extends State<MyHomePage>
       begin: 1,
       end: 2,
     ).animate(_penitenteController);
+
+    _loadPetStatus();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _penitenteController.dispose();
     super.dispose();
+  }
+
+  // Detecta quando o app vai para background ou é fechado
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _savePetStatus();
+    }
+  }
+
+  Future<void> _loadPetStatus() async {
+    try {
+      final status = await _dbHelper.getPetStatus();
+      if (status != null) {
+        setState(() {
+          hunger = status.hunger;
+          happiness = status.happiness;
+          energy = status.energy;
+          vitality = status.vitality;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Erro ao carregar status do pet: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _savePetStatus() async {
+    try {
+      await _dbHelper.savePetStatus(
+        hunger: hunger,
+        happiness: happiness,
+        energy: energy,
+        vitality: vitality,
+      );
+    } catch (e) {
+      print('Erro ao salvar status do pet: $e');
+    }
   }
 
   void feed() {
@@ -65,6 +124,7 @@ class _MyHomePageState extends State<MyHomePage>
       hunger = (hunger + 10).clamp(0, 100);
       vitality = (vitality + 2).clamp(0, 100);
     });
+    _savePetStatus(); // Salva automaticamente após cada ação
   }
 
   void play() {
@@ -73,6 +133,7 @@ class _MyHomePageState extends State<MyHomePage>
       energy = (energy - 5).clamp(0, 100);
       vitality = (vitality + 3).clamp(0, 100);
     });
+    _savePetStatus(); // Salva automaticamente após cada ação
   }
 
   void sleep() {
@@ -82,6 +143,14 @@ class _MyHomePageState extends State<MyHomePage>
       happiness = (happiness - 10).clamp(0, 100);
       vitality = (vitality + 5).clamp(0, 100);
     });
+    _savePetStatus(); // Salva automaticamente após cada ação
+  }
+
+  void increaseVitality() {
+    setState(() {
+      vitality = (vitality + 10).clamp(0, 100);
+    });
+    _savePetStatus(); // Salva automaticamente após cada ação
   }
 
   Widget needIndicator({
@@ -252,16 +321,16 @@ class _MyHomePageState extends State<MyHomePage>
     _buildResponsivePage(
       backgroundAsset: 'assets/background_alb.png',
       buttonText: 'Albero',
-      onPressed: () {
-        setState(() {
-          vitality = (vitality + 10).clamp(0, 100);
-        });
-      },
+      onPressed: increaseVitality,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
