@@ -223,7 +223,66 @@ class _MyHomePageState extends State<MyHomePage>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Botão de ação
+                    // Botões de trocar de tela (setas)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.arrow_left,
+                            size: screenWidth < 600 ? 28 : 32,
+                          ),
+                          color: Colors.deepPurple,
+                          onPressed: () {
+                            setState(() {
+                              _selectedIndex =
+                                  (_selectedIndex - 1 + _pages.length) %
+                                  _pages.length;
+                              _pageController.jumpToPage(_selectedIndex);
+                            });
+                          },
+                        ),
+                        SizedBox(width: 16),
+                        Text(
+                          _getPageTitle(_selectedIndex),
+                          style: TextStyle(
+                            fontSize: screenWidth < 600 ? 16 : 20,
+                            color: Colors.white,
+                            fontFamily: 'Pixel',
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        IconButton(
+                          icon: Icon(
+                            Icons.arrow_right,
+                            size: screenWidth < 600 ? 28 : 32,
+                          ),
+                          color: Colors.deepPurple,
+                          onPressed: () {
+                            setState(() {
+                              _selectedIndex =
+                                  (_selectedIndex + 1) % _pages.length;
+                              _pageController.jumpToPage(_selectedIndex);
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: screenHeight * 0.25),
+                    AnimatedBuilder(
+                      animation: _penitenteAnimation,
+                      builder: (context, child) {
+                        return Image.asset(
+                          'assets/Penitente_${_penitenteAnimation.value}.png',
+                          width: characterWidth,
+                          height: characterHeight,
+                        );
+                      },
+                    ),
+                    SizedBox(
+                      height: screenHeight * 0.05,
+                    ), // <-- Espaço entre personagem e botão
+                    // Botão de ação ("alimentar", etc)
                     ElevatedButton(
                       onPressed: onPressed,
                       style: ElevatedButton.styleFrom(
@@ -239,20 +298,6 @@ class _MyHomePageState extends State<MyHomePage>
                           fontSize: buttonFontSize,
                         ),
                       ),
-                    ),
-
-                    SizedBox(height: screenHeight * 0.02),
-
-                    // Personagem animado
-                    AnimatedBuilder(
-                      animation: _penitenteAnimation,
-                      builder: (context, child) {
-                        return Image.asset(
-                          'assets/Penitente_${_penitenteAnimation.value}.png',
-                          width: characterWidth,
-                          height: characterHeight,
-                        );
-                      },
                     ),
                   ],
                 ),
@@ -346,7 +391,7 @@ class _MyHomePageState extends State<MyHomePage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Indicadores de necessidades
+                  // Indicadores de necessidades (sem setas de navegação)
                   needIndicator(iconPath: 'assets/Icon_fé.jpg', value: hunger),
                   SizedBox(width: isSmallScreen ? 4 : 8),
                   needIndicator(
@@ -362,44 +407,6 @@ class _MyHomePageState extends State<MyHomePage>
                   needIndicator(
                     iconPath: 'assets/Icon_vitalidade.jpg',
                     value: vitality,
-                  ),
-                  SizedBox(width: isSmallScreen ? 8 : 16),
-
-                  // Controles de navegação
-                  IconButton(
-                    icon: Icon(Icons.arrow_left, size: isSmallScreen ? 20 : 24),
-                    color: Colors.white,
-                    onPressed: () {
-                      setState(() {
-                        _selectedIndex =
-                            (_selectedIndex - 1 + _pages.length) %
-                            _pages.length;
-                        _pageController.jumpToPage(_selectedIndex);
-                      });
-                    },
-                  ),
-
-                  SizedBox(width: isSmallScreen ? 4 : 8),
-
-                  Text(
-                    _getPageTitle(_selectedIndex),
-                    style: TextStyle(fontSize: isSmallScreen ? 16 : 20),
-                  ),
-
-                  SizedBox(width: isSmallScreen ? 4 : 8),
-
-                  IconButton(
-                    icon: Icon(
-                      Icons.arrow_right,
-                      size: isSmallScreen ? 20 : 24,
-                    ),
-                    color: Colors.white,
-                    onPressed: () {
-                      setState(() {
-                        _selectedIndex = (_selectedIndex + 1) % _pages.length;
-                        _pageController.jumpToPage(_selectedIndex);
-                      });
-                    },
                   ),
                 ],
               ),
@@ -418,41 +425,6 @@ class _MyHomePageState extends State<MyHomePage>
           });
         },
         children: _pages,
-      ),
-
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: 8.0,
-            horizontal: isSmallScreen ? 20 : 40,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: Icon(Icons.arrow_left, size: isSmallScreen ? 28 : 32),
-                color: Colors.deepPurple,
-                onPressed: () {
-                  setState(() {
-                    _selectedIndex =
-                        (_selectedIndex - 1 + _pages.length) % _pages.length;
-                    _pageController.jumpToPage(_selectedIndex);
-                  });
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.arrow_right, size: isSmallScreen ? 28 : 32),
-                color: Colors.deepPurple,
-                onPressed: () {
-                  setState(() {
-                    _selectedIndex = (_selectedIndex + 1) % _pages.length;
-                    _pageController.jumpToPage(_selectedIndex);
-                  });
-                },
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
