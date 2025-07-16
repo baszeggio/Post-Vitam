@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dao/postvitamdao.dart';
 import 'models/pet_status.dart';
+import 'shop_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -507,7 +508,11 @@ class _MyHomePageState extends State<MyHomePage>
                       height: screenWidth < 600 ? 48 : 64,
                     ),
                     onPressed: () {
-                      // ação da loja
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const ShopPage(),
+                        ),
+                      );
                     },
                   ),
                 ),
