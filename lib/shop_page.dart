@@ -7,25 +7,25 @@ class ShopPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final potions = [
       {
-        'img': 'assets/frasco_1.png',
+        'img': 'assets/Frasco_1.png',
         'name': 'Frasco Pequeno',
         'desc': 'Aumenta 1/4 da vitalidade do Penitente.',
         'price': 100,
       },
       {
-        'img': 'assets/frasco_2.png',
+        'img': 'assets/Frasco_2.png',
         'name': 'Frasco Médio',
         'desc': 'Restaura 40% da vitalidade total do Peninente.',
         'price': 120,
       },
       {
-        'img': 'assets/frasco_3.png',
+        'img': 'assets/Frasco_3.png',
         'name': 'Frasco Grande',
         'desc': 'Aumenta 3/4 da vitalidade do Penitente .',
         'price': 150,
       },
       {
-        'img': 'assets/frasco_4.png',
+        'img': 'assets/Frasco_4.png',
         'name': 'Frasco do Milagre',
         'desc': 'Restaura completamente a vitalidade do Penitente.',
         'price': 200,
@@ -34,19 +34,88 @@ class ShopPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFFb29c48)),
-        title: const Text(
-          'Loja',
-          style: TextStyle(
-            color: Color(0xFFb29c48),
-            fontFamily: 'Pixel',
-            fontWeight: FontWeight.bold,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(80),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            border: const Border(
+              bottom: BorderSide(color: Color(0xFFb29c48), width: 2),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.7),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Faixa decorativa atrás do texto
+              Positioned(
+                top: 32,
+                left: 32,
+                right: 32,
+                child: Container(
+                  height: 32,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF4A2C1A), Color(0xFF2C1810)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Color(0xFFb29c48), width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Título estilizado
+              Positioned(
+                top: 28,
+                child: Text(
+                  'Loja',
+                  style: TextStyle(
+                    color: Color(0xFFb29c48),
+                    fontFamily: 'Pixel',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 32,
+                    letterSpacing: 2,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.8),
+                        blurRadius: 6,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Botão de voltar
+              Positioned(
+                left: 8,
+                top: 28,
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Color(0xFFb29c48),
+                    size: 28,
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  tooltip: 'Voltar',
+                ),
+              ),
+            ],
           ),
         ),
-        centerTitle: true,
       ),
       extendBodyBehindAppBar: true,
       body: Stack(
