@@ -55,10 +55,10 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - assets/Icon_entretenimento.jpg
-    - assets/Icon_fé.jpg
-    - assets/Icon_fervor.jpg
-    - assets/Icon_vitalidade.jpg
+    - assets/Icon_entretenimento.png
+    - assets/Icon_fé.png
+    - assets/Icon_fervor.png
+    - assets/Icon_vitalidade.png
     - assets/Penitente_1.png
     - assets/background_cav.png
     - assets/Icon_loja.png

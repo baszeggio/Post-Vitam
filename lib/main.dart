@@ -348,19 +348,19 @@ class _MyHomePageState extends State<MyHomePage>
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       needIndicator(
-                        iconPath: 'assets/Icon_fé.jpg',
+                        iconPath: 'assets/Icon_fé.png',
                         value: hunger,
                       ),
                       needIndicator(
-                        iconPath: 'assets/Icon_entretenimento.jpg',
+                        iconPath: 'assets/Icon_entretenimento.png',
                         value: happiness,
                       ),
                       needIndicator(
-                        iconPath: 'assets/Icon_fervor.jpg',
+                        iconPath: 'assets/Icon_fervor.png',
                         value: energy,
                       ),
                       needIndicator(
-                        iconPath: 'assets/Icon_vitalidade.jpg',
+                        iconPath: 'assets/Icon_vitalidade.png',
                         value: vitality,
                       ),
                     ],
@@ -643,4 +643,5 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 }
+
 //  aaaa
