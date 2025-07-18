@@ -16,6 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Post Vitam',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         fontFamily: 'Pixel',
@@ -155,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage>
     _savePetStatus();
   }
 
-  // Botão personalizado estilo Blasphemous
+  // Botão personalizado estilo do Blasphemous
   Widget _buildBlasphemousButton({
     required String text,
     required VoidCallback onPressed,
@@ -211,7 +212,7 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  // Setas de navegação estilo Blasphemous
+  // Setas de navegação estilo do Blasphemous
   Widget _buildNavigationArrow({
     required IconData icon,
     required VoidCallback onPressed,
@@ -261,9 +262,9 @@ class _MyHomePageState extends State<MyHomePage>
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenWidth = MediaQuery.of(context).size.width;
-        final iconSize = screenWidth < 600 ? 48.0 : 56.0; // Aumentado
-        final barWidth = screenWidth < 600 ? 50.0 : 60.0; // Aumentado
-        final barHeight = screenWidth < 600 ? 8.0 : 10.0; // Aumentado
+        final iconSize = screenWidth < 600 ? 48.0 : 56.0;
+        final barWidth = screenWidth < 600 ? 50.0 : 60.0;
+        final barHeight = screenWidth < 600 ? 8.0 : 10.0;
 
         return Container(
           padding: EdgeInsets.all(8),
@@ -337,7 +338,6 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
 
-              // Indicadores de status (fora da AppBar, abaixo dela)
               Positioned(
                 top: 20,
                 left: 0,
@@ -431,7 +431,6 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
 
-              // Personagem centralizado
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -448,7 +447,7 @@ class _MyHomePageState extends State<MyHomePage>
                       },
                     ),
                     SizedBox(height: screenHeight * 0.005),
-                    // Botão de ação estilo Blasphemous
+                    // Botão de ação estilo do Blasphemous
                     _buildBlasphemousButton(
                       text: buttonText,
                       onPressed: onPressed,
@@ -592,7 +591,7 @@ class _MyHomePageState extends State<MyHomePage>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Image.asset(
-                      'assets/contador_moedas.png', // Adicione sua imagem de moeda aqui
+                      'assets/contador_moedas.png',
                       width: 20,
                       height: 20,
                     ),

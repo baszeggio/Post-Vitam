@@ -3,7 +3,6 @@ import 'package:path/path.dart';
 import 'dart:io';
 import '../models/pet_status.dart';
 
-// Importações condicionais para desktop
 import 'package:sqflite_common_ffi/sqflite_ffi.dart'
     if (dart.library.html) 'package:sqflite/sqflite.dart';
 
@@ -17,7 +16,6 @@ class DatabaseHelper {
   Future<Database> get database async {
     if (_database != null) return _database!;
 
-    // Inicializar ffi para desktop (Windows, macOS, Linux)
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
@@ -47,7 +45,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Inserir dados iniciais
     await db.insert('pet_status', {
       'id': 1,
       'hunger': 50,
@@ -73,7 +70,7 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> maps = await db.query(
       'pet_status',
       where: 'id = ?',
-      whereArgs: [1], // Sempre usar ID 1 para o pet principal
+      whereArgs: [1],
     );
 
     if (maps.isNotEmpty) {
@@ -85,7 +82,6 @@ class DatabaseHelper {
   Future<void> updatePetStatus(PetStatus status) async {
     final db = await database;
 
-    // Buscar o created_at existente
     final existing = await getPetStatus();
     final createdAt = existing?.createdAt ?? DateTime.now();
 
@@ -100,7 +96,7 @@ class DatabaseHelper {
         'updated_at': DateTime.now().toIso8601String(),
       },
       where: 'id = ?',
-      whereArgs: [1], // Sempre usar ID 1 para o pet principal
+      whereArgs: [1],
     );
   }
 
@@ -116,7 +112,6 @@ class DatabaseHelper {
     final existing = await getPetStatus();
 
     if (existing != null) {
-      // Atualizar registro existente
       await db.update(
         'pet_status',
         {
@@ -130,7 +125,6 @@ class DatabaseHelper {
         whereArgs: [1],
       );
     } else {
-      // Inserir novo registro
       await db.insert('pet_status', {
         'id': 1,
         'hunger': hunger,
