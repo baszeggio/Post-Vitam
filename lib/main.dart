@@ -592,7 +592,7 @@ class _MyHomePageState extends State<MyHomePage>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Image.asset(
-                      'assets/contador_moedas.png', // Adicione sua imagem de moeda aqui
+                      'assets/contador_moedas.png',
                       width: 20,
                       height: 20,
                     ),
