@@ -78,6 +78,12 @@ flutter:
     - assets/fonts/PressStart2P-Regular.ttf
     - assets/contador_moedas.png
     - assets/loja_interior.png
+    - assets/Skin_Aqua_1.png
+    - assets/Skin_Aqua_2.png
+    - assets/Skin_Silver_1.png
+    - assets/Skin_Silver_2.png
+    - assets/Skin_Gold_1.png
+    - assets/Skin_Gold_2.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

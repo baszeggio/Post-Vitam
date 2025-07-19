@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 import 'dao/postvitamdao.dart';
 import 'models/pet_status.dart';
 import 'shop_page.dart';
+import 'skins_shop_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -475,12 +476,21 @@ class _MyHomePageState extends State<MyHomePage>
                   ),
                   child: IconButton(
                     icon: Image.asset(
-                      'assets/Icon_espada.png',
+                      // Mostra o ícone do frasco 0 apenas na área da Albero (índice 3)
+                      _selectedIndex == 3 ? 'assets/Frasco_0.png' : 'assets/Icon_espada.png',
                       width: screenWidth < 600 ? 48 : 64,
                       height: screenWidth < 600 ? 48 : 64,
                     ),
                     onPressed: () {
-                      // ação da espada
+                      // Se estiver na área da Albero, abre a loja de frascos
+                      if (_selectedIndex == 3) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const ShopPage(),
+                          ),
+                        );
+                      }
+                      // Caso contrário, mantém a ação da espada (vazio por enquanto)
                     },
                   ),
                 ),
@@ -509,7 +519,7 @@ class _MyHomePageState extends State<MyHomePage>
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => const ShopPage(),
+                          builder: (context) => const SkinsShopPage(),
                         ),
                       );
                     },
