@@ -4,6 +4,7 @@ class PetStatus {
   final int happiness;
   final int energy;
   final int vitality;
+  final int coins;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -13,6 +14,7 @@ class PetStatus {
     required this.happiness,
     required this.energy,
     required this.vitality,
+    required this.coins,
     this.createdAt,
     this.updatedAt,
   });
@@ -23,6 +25,7 @@ class PetStatus {
     'happiness': happiness,
     'energy': energy,
     'vitality': vitality,
+    'coins': coins,
     'created_at': createdAt?.toIso8601String(),
     'updated_at': updatedAt?.toIso8601String(),
   };
@@ -33,6 +36,7 @@ class PetStatus {
     happiness: map['happiness'],
     energy: map['energy'],
     vitality: map['vitality'],
+    coins: map['coins'] ?? 20000,
     createdAt: map['created_at'] != null
         ? DateTime.parse(map['created_at'])
         : null,
@@ -43,6 +47,6 @@ class PetStatus {
 
   @override
   String toString() {
-    return 'PetStatus(id: $id, hunger: $hunger, happiness: $happiness, energy: $energy, vitality: $vitality, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'PetStatus(id: $id, hunger: $hunger, happiness: $happiness, energy: $energy, vitality: $vitality, coins: $coins, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 }
