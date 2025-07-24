@@ -51,6 +51,7 @@ class _MyHomePageState extends State<MyHomePage>
   List<Map<String, dynamic>> inventorySkins = [
     {
       'img': 'assets/Penitente_1.png',
+      'img2': 'assets/Penitente_2.png',
       'name': 'Skin Padrão',
       'desc': 'O visual padrão do Penitente.',
       'quantity': 1,
@@ -259,9 +260,11 @@ class _MyHomePageState extends State<MyHomePage>
           (item) => item['name'] == skin['name']
         );
         if (existingIndex == -1) {
-          // Adicionar nova skin
+          // Adicionar nova skin com o sprite 1 como imagem inicial
+          final baseName = skin['img'].toString().replaceAll('_1.png', '');
           inventorySkins.add({
-            'img': skin['img'],
+            'img': '${baseName}_1.png',
+            'img2': '${baseName}_2.png', // Adicionando o segundo sprite
             'name': skin['name'],
             'desc': skin['desc'],
             'quantity': 1,
@@ -276,6 +279,22 @@ class _MyHomePageState extends State<MyHomePage>
       return true;
     }
     return false;
+  }
+
+  // Equipar skin
+  void equipSkin(int index) {
+    if (index < inventorySkins.length) {
+      setState(() {
+        // Desativar todas as skins
+        for (var skin in inventorySkins) {
+          skin['equipped'] = false;
+        }
+        // Equipar a skin selecionada
+        inventorySkins[index]['equipped'] = true;
+      });
+      // Salvar inventário atualizado
+      _saveInventory();
+    }
   }
 
   // Usar frasco
@@ -405,6 +424,7 @@ class _MyHomePageState extends State<MyHomePage>
         if (inventorySkins.isEmpty || inventorySkins.every((skin) => skin['name'] != 'Skin Padrão')) {
           inventorySkins.insert(0, {
             'img': 'assets/Penitente_1.png',
+            'img2': 'assets/Penitente_2.png',
             'name': 'Skin Padrão',
             'desc': 'O visual padrão do Penitente.',
             'quantity': 1,
@@ -830,8 +850,15 @@ class _MyHomePageState extends State<MyHomePage>
                     AnimatedBuilder(
                       animation: _penitenteAnimation,
                       builder: (context, child) {
+                        // Encontrar a skin equipada
+                        final equippedSkin = inventorySkins.firstWhere(
+                          (skin) => skin['equipped'] == true,
+                          orElse: () => inventorySkins[0], // Usar skin padrão se nenhuma estiver equipada
+                        );
                         return Image.asset(
-                          'assets/Penitente_${_penitenteAnimation.value}.png',
+                          _penitenteAnimation.value == 1 
+                            ? equippedSkin['img'] 
+                            : equippedSkin['img2'] ?? equippedSkin['img'],
                           width: characterWidth,
                           height: characterHeight,
                         );
@@ -901,7 +928,6 @@ class _MyHomePageState extends State<MyHomePage>
                                     onBuyPotion: buyPotion,
                                     currentCoins: coins,
                                   ),
-                                  settings: RouteSettings(arguments: inventorySkins),
                                 ),
                               );
                             }
@@ -938,6 +964,7 @@ class _MyHomePageState extends State<MyHomePage>
                             onBuySkin: buySkin,
                             currentCoins: coins,
                           ),
+                          settings: RouteSettings(arguments: inventorySkins),
                         ),
                       );
                     },
@@ -1033,7 +1060,7 @@ class _MyHomePageState extends State<MyHomePage>
                                   potions: inventoryPotions,
                                   skins: inventorySkins,
                                   onUsePotion: usePotion,
-                                  onEquipSkin: (index) {}, // Remover ação de equipar
+                                  onEquipSkin: equipSkin,
                                   onUpdate: updateInventory,
                                 ),
                               ),
@@ -1086,8 +1113,26 @@ class _MyHomePageState extends State<MyHomePage>
                         tooltip: 'Resetar progresso',
                         onPressed: () async {
                           await _dbHelper.resetDatabase();
-                          await _applyDegradationOnline();
-                          await _loadInventory();
+                          // Atualizar estado local
+                          setState(() {
+                            hunger = 50;
+                            happiness = 50;
+                            energy = 50;
+                            vitality = 50;
+                            coins = 20000;
+                            inventoryPotions.clear();
+                            inventorySkins = [
+                              {
+                                'img': 'assets/Penitente_1.png',
+                                'img2': 'assets/Penitente_2.png',
+                                'name': 'Skin Padrão',
+                                'desc': 'O visual padrão do Penitente.',
+                                'quantity': 1,
+                                'type': 'skin',
+                                'equipped': true,
+                              }
+                            ];
+                          });
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(

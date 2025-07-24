@@ -30,17 +30,13 @@ class _InventoryPageState extends State<InventoryPage>
     if (defaultIndex == -1) {
       skins.insert(0, {
         'img': 'assets/Penitente_1.png',
+        'img2': 'assets/Penitente_2.png',
         'name': 'Skin Padrão',
         'desc': 'O visual padrão do Penitente.',
         'quantity': 1,
         'type': 'skin',
         'equipped': true,
       });
-    } else {
-      for (var skin in skins) {
-        skin['equipped'] = false;
-      }
-      skins[defaultIndex]['equipped'] = true;
     }
     return skins;
   }
@@ -505,8 +501,17 @@ class _InventoryPageState extends State<InventoryPage>
                     borderRadius: BorderRadius.circular(12),
                     onTap: () {
                       final index = _skinsWithDefault.indexOf(skin);
-                      if (skin['equipped'] == true) return;
-                      widget.onEquipSkin(index);
+                      if (skin['equipped'] != true) {
+                        widget.onEquipSkin(index);
+                        setState(() {
+                          // Atualizar estado local
+                          for (var s in _skinsWithDefault) {
+                            s['equipped'] = false;
+                          }
+                          skin['equipped'] = true;
+                        });
+                        widget.onUpdate();
+                      }
                     },
                     child: Padding(
                       padding: EdgeInsets.all(16),
