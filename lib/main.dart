@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
 import 'dart:async';
 import 'dao/postvitamdao.dart';
-import 'models/pet_status.dart';
 import 'shop_page.dart';
 import 'skins_shop_page.dart';
 import 'inventory_page.dart';
-import 'package:flame/flame.dart';
+import 'services/notification_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await NotificationService.initialize();
+  
   runApp(const MyApp());
 }
 
@@ -40,13 +41,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+
   int hunger = 50;
   int happiness = 50;
   int energy = 50;
   int vitality = 50;
-  int coins = 20000; // Exemplo de moedas
+  int coins = 20000;
   
-  // Inventário global
   List<Map<String, dynamic>> inventoryPotions = [];
   List<Map<String, dynamic>> inventorySkins = [
     {
@@ -68,14 +69,47 @@ class _MyHomePageState extends State<MyHomePage>
 
   bool _isLoading = true;
   
-  // Timer para degradação automática
   Timer? _degradationTimer;
   
-  // Timer para atualizar relógio
-  Timer? _clockTimer;
-  
-  // Hora atual
-  String _currentTime = '';
+  void _checkAndSendNotifications() {
+
+    if (hunger <= 20) {
+      NotificationService.showGameNotification(
+        title: 'Sua Fé está baixa!',
+        body: 'Seu Penitente precisa orar na Igreja para restaurar sua Fé.',
+      );
+    }
+
+
+    if (energy <= 20) {
+      NotificationService.showGameNotification(
+        title: 'Seu Fervor está baixo!',
+        body: 'Seu Penitente precisa descansar nas Montanhas para recuperar o Fervor.',
+      );
+    }
+
+
+    if (vitality <= 15) {
+      NotificationService.showGameNotification(
+        title: 'Vitalidade Crítica!',
+        body: 'Use um frasco ou medite em Albero para restaurar a Vitalidade do seu Penitente.',
+      );
+    }
+
+
+    if (hunger <= 30 && happiness <= 30 && energy <= 30) {
+      NotificationService.showGameNotification(
+        title: 'Seu Penitente precisa de atenção!',
+        body: 'Múltiplos status estão baixos. Cuide do seu Penitente!',
+      );
+    }
+  }
+
+
+  void _scheduleDailyReminders() {
+
+    print('Sistema de lembretes inicializado (modo simplificado)');
+  }
 
   @override
   void initState() {
@@ -101,9 +135,9 @@ class _MyHomePageState extends State<MyHomePage>
       await _applyDegradationOnline();
       await _loadInventory();
       _startDegradationTimer();
-      _startClockTimer();
-      _updateCurrentTime();
-      // Forçar salvamento inicial para garantir que os dados estão no banco
+
+      _scheduleDailyReminders();
+
       await Future.delayed(Duration(seconds: 2));
       await _savePetStatus();
       await _saveInventory();
@@ -118,23 +152,7 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-  Future<void> _applyDegradationOffline() async {
-    try {
-      final status = await _dbHelper.calculateDegradationOffline();
-      setState(() {
-        hunger = status.hunger;
-        happiness = status.happiness;
-        energy = status.energy;
-        vitality = status.vitality;
-        coins = status.coins;
-      });
-    } catch (e) {
-      print('Erro ao aplicar degradação offline: $e');
-    }
-    setState(() {
-      _isLoading = false;
-    });
-  }
+
 
   Future<void> _applyDegradationOnline() async {
     try {
@@ -151,11 +169,13 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-  // Iniciar timer para degradação automática
+
   void _startDegradationTimer() {
-    // Aplicar degradação a cada 5 segundos (teste rápido)
+
     _degradationTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       _applyDegradationOnline();
+
+      _checkAndSendNotifications();
     });
   }
 
@@ -164,11 +184,10 @@ class _MyHomePageState extends State<MyHomePage>
     WidgetsBinding.instance.removeObserver(this);
     _penitenteController.dispose();
     _degradationTimer?.cancel();
-    _clockTimer?.cancel();
     super.dispose();
   }
 
-  // Aplicar degradação apenas nos status (preservar moedas)
+
   Future<void> _applyStatusDegradation() async {
     try {
       final status = await _dbHelper.applyDegradationAndGetStatus();
@@ -177,60 +196,46 @@ class _MyHomePageState extends State<MyHomePage>
         happiness = status.happiness;
         energy = status.energy;
         vitality = status.vitality;
-        // Não alterar as moedas aqui
+
       });
     } catch (e) {
       print('Erro ao aplicar degradação de status: $e');
     }
   }
 
-  // Iniciar timer para atualizar relógio
-  void _startClockTimer() {
-    _clockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _updateCurrentTime();
-    });
-  }
 
-  // Atualizar hora atual
-  void _updateCurrentTime() {
-    final now = DateTime.now();
-    setState(() {
-      _currentTime = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
-    });
-  }
 
-  // Formatar números de dinheiro (1000+ vira X.XK)
+
   String _formatMoney(int amount) {
     if (amount >= 1000) {
       double kValue = amount / 1000.0;
       if (kValue == kValue.toInt()) {
-        // Se for número inteiro (ex: 5000 -> 5K)
+
         return '${kValue.toInt()}K';
       } else {
-        // Se tiver decimais (ex: 1250 -> 1.25K)
+
         return '${kValue.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}K';
       }
     }
     return amount.toString();
   }
 
-  // Comprar frasco
+
   bool buyPotion(Map<String, dynamic> potion) {
     final price = potion['price'] as int;
     if (coins >= price) {
       setState(() {
         coins -= price;
         
-        // Verificar se já existe no inventário
         final existingIndex = inventoryPotions.indexWhere(
           (item) => item['name'] == potion['name']
         );
         
         if (existingIndex != -1) {
-          // Aumentar quantidade
+
           inventoryPotions[existingIndex]['quantity'] += 1;
         } else {
-          // Adicionar novo item
+
           inventoryPotions.add({
             'img': potion['img'],
             'name': potion['name'],
@@ -241,7 +246,6 @@ class _MyHomePageState extends State<MyHomePage>
         }
       });
       
-      // Salvar moedas e inventário no banco de dados
       _savePetStatus();
       _saveInventory();
       return true;
@@ -249,22 +253,20 @@ class _MyHomePageState extends State<MyHomePage>
     return false;
   }
 
-  // Comprar skin
+
   bool buySkin(Map<String, dynamic> skin) {
     final price = skin['price'] as int;
     if (coins >= price) {
       setState(() {
         coins -= price;
-        // Verificar se já existe no inventário
         final existingIndex = inventorySkins.indexWhere(
           (item) => item['name'] == skin['name']
         );
         if (existingIndex == -1) {
-          // Adicionar nova skin com o sprite 1 como imagem inicial
           final baseName = skin['img'].toString().replaceAll('_1.png', '');
           inventorySkins.add({
             'img': '${baseName}_1.png',
-            'img2': '${baseName}_2.png', // Adicionando o segundo sprite
+            'img2': '${baseName}_2.png',
             'name': skin['name'],
             'desc': skin['desc'],
             'quantity': 1,
@@ -273,7 +275,6 @@ class _MyHomePageState extends State<MyHomePage>
           });
         }
       });
-      // Salvar moedas e inventário no banco de dados
       _savePetStatus();
       _saveInventory();
       return true;
@@ -281,67 +282,67 @@ class _MyHomePageState extends State<MyHomePage>
     return false;
   }
 
-  // Equipar skin
+
   void equipSkin(int index) {
     if (index < inventorySkins.length) {
       setState(() {
-        // Desativar todas as skins
+
         for (var skin in inventorySkins) {
           skin['equipped'] = false;
         }
-        // Equipar a skin selecionada
+
         inventorySkins[index]['equipped'] = true;
       });
-      // Salvar inventário atualizado
+
       _saveInventory();
     }
   }
 
-  // Usar frasco
+
   void usePotion(int index) {
     if (index < inventoryPotions.length && inventoryPotions[index]['quantity'] > 0) {
       final potion = inventoryPotions[index];
       final potionName = potion['name'] as String;
       
       setState(() {
-        // Aplicar efeito do frasco baseado no nome
+
         if (potionName.contains('Pequeno')) {
-          // Restaura 15 pontos de vitalidade (nerfado)
+
           vitality = (vitality + 15).clamp(0, 100);
         } else if (potionName.contains('Médio')) {
-          // Restaura 25 pontos de vitalidade (nerfado)
+
           vitality = (vitality + 25).clamp(0, 100);
         } else if (potionName.contains('Grande')) {
-          // Restaura 40 pontos de vitalidade (nerfado)
+
           vitality = (vitality + 40).clamp(0, 100);
         } else if (potionName.contains('Milagre')) {
-          // Aumenta o máximo de vitalidade em 10% (único que pode ultrapassar 100)
+
           vitality = (vitality * 1.10).round();
         }
         
-        // Diminuir quantidade
+
         inventoryPotions[index]['quantity'] -= 1;
         
-        // Se quantidade chegar a 0, remover do inventário
+
         if (inventoryPotions[index]['quantity'] <= 0) {
           inventoryPotions.removeAt(index);
         }
       });
       
-      // Salvar status e inventário atualizados
+
       _savePetStatus();
       _saveInventory();
     }
   }
 
-  // Função para atualizar inventário
+
   void updateInventory() {
     setState(() {});
   }
 
-  // Remover função equipSkin e qualquer chamada relacionada
 
-  // Detecta quando o app vai para background ou é fechado
+
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
@@ -350,40 +351,12 @@ class _MyHomePageState extends State<MyHomePage>
       _savePetStatus();
       _saveInventory();
     } else if (state == AppLifecycleState.resumed) {
-      // Quando o app retorna do background, aplicar degradação apenas nos status
+
       _applyStatusDegradation();
     }
   }
 
-  Future<void> _loadPetStatus() async {
-    try {
-      print('=== INICIANDO CARREGAMENTO DE STATUS ===');
-      
-      // Verificar integridade do banco
-      await _dbHelper.checkDatabaseIntegrity();
-      
-      // Carregar status atual sem aplicar degradação
-      final status = await _dbHelper.loadPetStatusWithoutDegradation();
-      print('Carregando status - Moedas: ${status.coins}');
-      
-      setState(() {
-        hunger = status.hunger;
-        happiness = status.happiness;
-        energy = status.energy;
-        vitality = status.vitality;
-        coins = status.coins;
-        _isLoading = false;
-      });
-      
-      print('Status carregado com sucesso - Moedas: $coins');
-      print('=== CARREGAMENTO CONCLUÍDO ===');
-    } catch (e) {
-      print('Erro ao carregar status do pet: $e');
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
+
 
   Future<void> _savePetStatus() async {
     try {
@@ -495,7 +468,7 @@ class _MyHomePageState extends State<MyHomePage>
     _savePetStatus();
   }
 
-  // Botão personalizado estilo do Blasphemous
+
   Widget _buildBlasphemousButton({
     required String text,
     required VoidCallback onPressed,
@@ -506,16 +479,15 @@ class _MyHomePageState extends State<MyHomePage>
       width: width,
       height: height,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF2C1810), Color(0xFF4A2C1A), Color(0xFF6B3E2A)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
+        color: Colors.black.withOpacity(0.7),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Color(0xFFb29c48), width: 2),
+        border: Border.all(
+          color: Color(0xFFb29c48),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black.withOpacity(0.5),
             blurRadius: 8,
             offset: Offset(0, 4),
           ),
@@ -524,25 +496,23 @@ class _MyHomePageState extends State<MyHomePage>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           onTap: onPressed,
-          child: Container(
-            padding: EdgeInsets.all(8),
-            child: Center(
-              child: Text(
-                text,
-                style: TextStyle(
-                  color: Color(0xFFb29c48),
-                  fontSize: width < 120 ? 12 : 16,
-                  fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black,
-                      blurRadius: 2,
-                      offset: Offset(1, 1),
-                    ),
-                  ],
-                ),
+          child: Center(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: Color(0xFFb29c48),
+                fontFamily: 'Pixel',
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                shadows: [
+                  Shadow(
+                    color: Colors.black,
+                    blurRadius: 2,
+                    offset: Offset(1, 1),
+                  ),
+                ],
               ),
             ),
           ),
@@ -551,42 +521,40 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  // Setas de navegação estilo do Blasphemous
   Widget _buildNavigationArrow({
     required IconData icon,
-    required VoidCallback onPressed,
     required double size,
+    required VoidCallback onPressed,
   }) {
     return Container(
-      width: size,
-      height: size,
       decoration: BoxDecoration(
-        gradient: RadialGradient(
-          colors: [Color(0xFF6B3E2A), Color(0xFF2C1810)],
-        ),
+        color: Colors.black.withOpacity(0.7),
         shape: BoxShape.circle,
-        border: Border.all(color: Color(0xFFb29c48), width: 2),
+        border: Border.all(
+          color: Color(0xFFb29c48),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.5),
-            blurRadius: 6,
-            offset: Offset(0, 2),
+            blurRadius: 8,
+            offset: Offset(0, 4),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        shape: CircleBorder(),
         child: InkWell(
-          customBorder: CircleBorder(),
+          borderRadius: BorderRadius.circular(size),
           onTap: onPressed,
-          child: Icon(
-            icon,
-            color: Color(0xFFb29c48),
-            size: size * 0.6,
-            shadows: [
-              Shadow(color: Colors.black, blurRadius: 2, offset: Offset(1, 1)),
-            ],
+          child: Container(
+            width: size,
+            height: size,
+            child: Icon(
+              icon,
+              color: Color(0xFFb29c48),
+              size: size * 0.6,
+            ),
           ),
         ),
       ),
@@ -642,7 +610,7 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
               SizedBox(height: isVerySmallScreen ? 2 : 4),
-              // Contador de pontos
+
               Text(
                 value > 100 ? '$value' : '$value/100',
                 style: TextStyle(
@@ -685,7 +653,7 @@ class _MyHomePageState extends State<MyHomePage>
           height: screenHeight,
           child: Stack(
             children: [
-              // Background image
+
               Positioned.fill(
                 child: Image.asset(
                   backgroundAsset,
@@ -709,7 +677,7 @@ class _MyHomePageState extends State<MyHomePage>
                       child: isVerySmallScreen 
                         ? Column(
                             children: [
-                              // Primeira linha - Fé e Entretenimento
+
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
@@ -724,7 +692,7 @@ class _MyHomePageState extends State<MyHomePage>
                                 ],
                               ),
                               SizedBox(height: 8),
-                              // Segunda linha - Fervor e Vitalidade
+
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
@@ -766,7 +734,7 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
 
-              // Navegação e título
+
               Positioned(
                 top: screenHeight * 0.25,
                 left: 0,
@@ -850,10 +818,10 @@ class _MyHomePageState extends State<MyHomePage>
                     AnimatedBuilder(
                       animation: _penitenteAnimation,
                       builder: (context, child) {
-                        // Encontrar a skin equipada
+
                         final equippedSkin = inventorySkins.firstWhere(
                           (skin) => skin['equipped'] == true,
-                          orElse: () => inventorySkins[0], // Usar skin padrão se nenhuma estiver equipada
+                          orElse: () => inventorySkins[0],
                         );
                         return Image.asset(
                           _penitenteAnimation.value == 1 
@@ -864,19 +832,21 @@ class _MyHomePageState extends State<MyHomePage>
                         );
                       },
                     ),
-                    SizedBox(height: isVerySmallScreen ? 12 : 20),
-                    // Botão de ação estilo do Blasphemous
-                    _buildBlasphemousButton(
-                      text: buttonText,
-                      onPressed: onPressed,
-                      width: buttonWidth,
-                      height: buttonHeight,
-                    ),
+                    if (buttonText.isNotEmpty) ...[
+                      SizedBox(height: isVerySmallScreen ? 12 : 20),
+
+                      _buildBlasphemousButton(
+                        text: buttonText,
+                        onPressed: onPressed,
+                        width: buttonWidth,
+                        height: buttonHeight,
+                      ),
+                    ],
                   ],
                 ),
               ),
 
-              // Ícones nos cantos
+
               Positioned(
                 left: screenWidth * 0.05,
                 bottom: screenHeight * 0.05,
@@ -915,8 +885,12 @@ class _MyHomePageState extends State<MyHomePage>
                         ),
                         child: IconButton(
                           icon: Image.asset(
-                            // Mostra o ícone do frasco 0 apenas na área da Albero (índice 3)
-                            _selectedIndex == 3 ? 'assets/Frasco_0.png' : 'assets/Icon_espada.png',
+
+                            _selectedIndex == 3 
+                              ? 'assets/Frasco_0.png' 
+                              : _selectedIndex == 2 
+                                ? 'assets/Icon_vaso_fervor.png'
+                                : 'assets/Icon_espada.png',
                             width: screenWidth < 600 ? 48 : 64,
                             height: screenWidth < 600 ? 48 : 64,
                           ),
@@ -930,9 +904,15 @@ class _MyHomePageState extends State<MyHomePage>
                                   ),
                                 ),
                               );
+                            } else if (_selectedIndex == 2) {
+                              sleep();
                             }
-                            // Caso contrário, mantém a ação da espada (vazio por enquanto)
                           },
+                          tooltip: _selectedIndex == 3 
+                            ? 'Loja de Frascos'
+                            : _selectedIndex == 2 
+                              ? 'Descansar'
+                              : 'Espada',
                         ),
                       ),
               ),
@@ -981,7 +961,7 @@ class _MyHomePageState extends State<MyHomePage>
   List<Widget> get _pages => [
     _buildResponsivePage(
       backgroundAsset: 'assets/background_igr.png',
-      buttonText: 'Orar',
+      buttonText: '',
       onPressed: feed,
     ),
     _buildResponsivePage(
@@ -991,7 +971,7 @@ class _MyHomePageState extends State<MyHomePage>
     ),
     _buildResponsivePage(
       backgroundAsset: 'assets/background_mon.png',
-      buttonText: 'Descansar',
+      buttonText: '',
       onPressed: sleep,
     ),
     _buildResponsivePage(
@@ -1040,7 +1020,7 @@ class _MyHomePageState extends State<MyHomePage>
                   ),
                   Row(
                     children: [
-                      // Botão do Inventário
+
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.5),
@@ -1070,7 +1050,7 @@ class _MyHomePageState extends State<MyHomePage>
                         ),
                       ),
                       SizedBox(width: 8),
-                      // Contador de moedas
+
                       Container(
                         width: isSmallScreen ? 80 : 100,
                         height: isSmallScreen ? 48 : 60,
@@ -1107,13 +1087,13 @@ class _MyHomePageState extends State<MyHomePage>
                         ),
                       ),
                       SizedBox(width: 8),
-                      // Botão de reset
+
                       IconButton(
                         icon: Icon(Icons.refresh, color: Color(0xFFb29c48)),
                         tooltip: 'Resetar progresso',
                         onPressed: () async {
                           await _dbHelper.resetDatabase();
-                          // Atualizar estado local
+
                           setState(() {
                             hunger = 50;
                             happiness = 50;
@@ -1183,4 +1163,4 @@ class _MyHomePageState extends State<MyHomePage>
   }
 }
 
-//  aaaa
+
