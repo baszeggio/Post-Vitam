@@ -86,6 +86,15 @@ flutter:
     - assets/Skin_Silver_2.png
     - assets/Skin_Gold_1.png
     - assets/Skin_Gold_2.png
+    - assets/Santa_Chaga_1.png
+    - assets/Santa_Chaga_2.png
+    - assets/Santa_Chaga_3.png
+    - assets/Santa_Chaga_4.png
+    - assets/Pano_1.png
+    - assets/Pano_2.png
+    - assets/Pano_3.png
+    - assets/Pano_4.png
+    
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
