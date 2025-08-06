@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:pou_application_1/faith_shop_page.dart';
+import 'package:pou_application_1/fervor_shop_page.dart';
 import 'dart:async';
 import 'dao/postvitamdao.dart';
-import 'shop_page.dart';
+import 'potions_shop_page.dart';
 import 'skins_shop_page.dart';
 import 'inventory_page.dart';
 import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await NotificationService.initialize();
-  
+
   runApp(const MyApp());
 }
 
@@ -41,13 +43,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-
   int hunger = 50;
   int happiness = 50;
   int energy = 50;
   int vitality = 50;
   int coins = 20000;
-  
+
   List<Map<String, dynamic>> inventoryPotions = [];
   List<Map<String, dynamic>> inventorySkins = [
     {
@@ -68,11 +69,10 @@ class _MyHomePageState extends State<MyHomePage>
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
   bool _isLoading = true;
-  
-  Timer? _degradationTimer;
-  
-  void _checkAndSendNotifications() {
 
+  Timer? _degradationTimer;
+
+  void _checkAndSendNotifications() {
     if (hunger <= 20) {
       NotificationService.showGameNotification(
         title: 'Sua Fé está baixa!',
@@ -80,22 +80,21 @@ class _MyHomePageState extends State<MyHomePage>
       );
     }
 
-
     if (energy <= 20) {
       NotificationService.showGameNotification(
         title: 'Seu Fervor está baixo!',
-        body: 'Seu Penitente precisa descansar nas Montanhas para recuperar o Fervor.',
+        body:
+            'Seu Penitente precisa descansar nas Montanhas para recuperar o Fervor.',
       );
     }
-
 
     if (vitality <= 15) {
       NotificationService.showGameNotification(
         title: 'Vitalidade Crítica!',
-        body: 'Use um frasco ou medite em Albero para restaurar a Vitalidade do seu Penitente.',
+        body:
+            'Use um frasco ou medite em Albero para restaurar a Vitalidade do seu Penitente.',
       );
     }
-
 
     if (hunger <= 30 && happiness <= 30 && energy <= 30) {
       NotificationService.showGameNotification(
@@ -105,9 +104,7 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-
   void _scheduleDailyReminders() {
-
     print('Sistema de lembretes inicializado (modo simplificado)');
   }
 
@@ -152,8 +149,6 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-
-
   Future<void> _applyDegradationOnline() async {
     try {
       final status = await _dbHelper.calculateDegradationOnline();
@@ -169,9 +164,7 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-
   void _startDegradationTimer() {
-
     _degradationTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       _applyDegradationOnline();
 
@@ -187,7 +180,6 @@ class _MyHomePageState extends State<MyHomePage>
     super.dispose();
   }
 
-
   Future<void> _applyStatusDegradation() async {
     try {
       final status = await _dbHelper.applyDegradationAndGetStatus();
@@ -196,46 +188,37 @@ class _MyHomePageState extends State<MyHomePage>
         happiness = status.happiness;
         energy = status.energy;
         vitality = status.vitality;
-
       });
     } catch (e) {
       print('Erro ao aplicar degradação de status: $e');
     }
   }
 
-
-
-
   String _formatMoney(int amount) {
     if (amount >= 1000) {
       double kValue = amount / 1000.0;
       if (kValue == kValue.toInt()) {
-
         return '${kValue.toInt()}K';
       } else {
-
         return '${kValue.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}K';
       }
     }
     return amount.toString();
   }
 
-
   bool buyPotion(Map<String, dynamic> potion) {
     final price = potion['price'] as int;
     if (coins >= price) {
       setState(() {
         coins -= price;
-        
-        final existingIndex = inventoryPotions.indexWhere(
-          (item) => item['name'] == potion['name']
-        );
-        
-        if (existingIndex != -1) {
 
+        final existingIndex = inventoryPotions.indexWhere(
+          (item) => item['name'] == potion['name'],
+        );
+
+        if (existingIndex != -1) {
           inventoryPotions[existingIndex]['quantity'] += 1;
         } else {
-
           inventoryPotions.add({
             'img': potion['img'],
             'name': potion['name'],
@@ -245,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage>
           });
         }
       });
-      
+
       _savePetStatus();
       _saveInventory();
       return true;
@@ -253,14 +236,13 @@ class _MyHomePageState extends State<MyHomePage>
     return false;
   }
 
-
   bool buySkin(Map<String, dynamic> skin) {
     final price = skin['price'] as int;
     if (coins >= price) {
       setState(() {
         coins -= price;
         final existingIndex = inventorySkins.indexWhere(
-          (item) => item['name'] == skin['name']
+          (item) => item['name'] == skin['name'],
         );
         if (existingIndex == -1) {
           final baseName = skin['img'].toString().replaceAll('_1.png', '');
@@ -282,11 +264,9 @@ class _MyHomePageState extends State<MyHomePage>
     return false;
   }
 
-
   void equipSkin(int index) {
     if (index < inventorySkins.length) {
       setState(() {
-
         for (var skin in inventorySkins) {
           skin['equipped'] = false;
         }
@@ -298,50 +278,38 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-
   void usePotion(int index) {
-    if (index < inventoryPotions.length && inventoryPotions[index]['quantity'] > 0) {
+    if (index < inventoryPotions.length &&
+        inventoryPotions[index]['quantity'] > 0) {
       final potion = inventoryPotions[index];
       final potionName = potion['name'] as String;
-      
+
       setState(() {
-
         if (potionName.contains('Pequeno')) {
-
           vitality = (vitality + 15).clamp(0, 100);
         } else if (potionName.contains('Médio')) {
-
           vitality = (vitality + 25).clamp(0, 100);
         } else if (potionName.contains('Grande')) {
-
           vitality = (vitality + 40).clamp(0, 100);
         } else if (potionName.contains('Milagre')) {
-
           vitality = (vitality * 1.10).round();
         }
-        
 
         inventoryPotions[index]['quantity'] -= 1;
-        
 
         if (inventoryPotions[index]['quantity'] <= 0) {
           inventoryPotions.removeAt(index);
         }
       });
-      
 
       _savePetStatus();
       _saveInventory();
     }
   }
 
-
   void updateInventory() {
     setState(() {});
   }
-
-
-
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -351,18 +319,17 @@ class _MyHomePageState extends State<MyHomePage>
       _savePetStatus();
       _saveInventory();
     } else if (state == AppLifecycleState.resumed) {
-
       _applyStatusDegradation();
     }
   }
 
-
-
   Future<void> _savePetStatus() async {
     try {
       print('=== INICIANDO SALVAMENTO DE STATUS ===');
-      print('Salvando status - Hunger: $hunger, Happiness: $happiness, Energy: $energy, Vitality: $vitality, Coins: $coins');
-      
+      print(
+        'Salvando status - Hunger: $hunger, Happiness: $happiness, Energy: $energy, Vitality: $vitality, Coins: $coins',
+      );
+
       await _dbHelper.savePetStatus(
         hunger: hunger,
         happiness: happiness,
@@ -370,7 +337,7 @@ class _MyHomePageState extends State<MyHomePage>
         vitality: vitality,
         coins: coins,
       );
-      
+
       print('Status salvo com sucesso!');
       print('=== SALVAMENTO CONCLUÍDO ===');
     } catch (e) {
@@ -394,7 +361,8 @@ class _MyHomePageState extends State<MyHomePage>
           }
         }
         // Garante que a skin padrão sempre está presente e equipada na primeira vez
-        if (inventorySkins.isEmpty || inventorySkins.every((skin) => skin['name'] != 'Skin Padrão')) {
+        if (inventorySkins.isEmpty ||
+            inventorySkins.every((skin) => skin['name'] != 'Skin Padrão')) {
           inventorySkins.insert(0, {
             'img': 'assets/Penitente_1.png',
             'img2': 'assets/Penitente_2.png',
@@ -418,7 +386,9 @@ class _MyHomePageState extends State<MyHomePage>
           inventorySkins[0]['equipped'] = true;
         }
       });
-      print('Inventário carregado - Poções:  [33m${inventoryPotions.length} [0m, Skins:  [33m${inventorySkins.length} [0m');
+      print(
+        'Inventário carregado - Poções:  [33m${inventoryPotions.length} [0m, Skins:  [33m${inventorySkins.length} [0m',
+      );
     } catch (e) {
       print('Erro ao carregar inventário: $e');
     }
@@ -468,7 +438,6 @@ class _MyHomePageState extends State<MyHomePage>
     _savePetStatus();
   }
 
-
   Widget _buildBlasphemousButton({
     required String text,
     required VoidCallback onPressed,
@@ -481,10 +450,7 @@ class _MyHomePageState extends State<MyHomePage>
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.7),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: Color(0xFFb29c48),
-          width: 2,
-        ),
+        border: Border.all(color: Color(0xFFb29c48), width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.5),
@@ -530,10 +496,7 @@ class _MyHomePageState extends State<MyHomePage>
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.7),
         shape: BoxShape.circle,
-        border: Border.all(
-          color: Color(0xFFb29c48),
-          width: 2,
-        ),
+        border: Border.all(color: Color(0xFFb29c48), width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.5),
@@ -550,11 +513,7 @@ class _MyHomePageState extends State<MyHomePage>
           child: Container(
             width: size,
             height: size,
-            child: Icon(
-              icon,
-              color: Color(0xFFb29c48),
-              size: size * 0.6,
-            ),
+            child: Icon(icon, color: Color(0xFFb29c48), size: size * 0.6),
           ),
         ),
       ),
@@ -571,11 +530,19 @@ class _MyHomePageState extends State<MyHomePage>
         final screenWidth = MediaQuery.of(context).size.width;
         final isSmallScreen = screenWidth < 600;
         final isVerySmallScreen = screenWidth < 400;
-        
-        final iconSize = isVerySmallScreen ? 36.0 : (isSmallScreen ? 44.0 : 56.0);
-        final barWidth = isVerySmallScreen ? 40.0 : (isSmallScreen ? 50.0 : 60.0);
-        final barHeight = isVerySmallScreen ? 6.0 : (isSmallScreen ? 8.0 : 10.0);
-        final fontSize = isVerySmallScreen ? 8.0 : (isSmallScreen ? 10.0 : 12.0);
+
+        final iconSize = isVerySmallScreen
+            ? 36.0
+            : (isSmallScreen ? 44.0 : 56.0);
+        final barWidth = isVerySmallScreen
+            ? 40.0
+            : (isSmallScreen ? 50.0 : 60.0);
+        final barHeight = isVerySmallScreen
+            ? 6.0
+            : (isSmallScreen ? 8.0 : 10.0);
+        final fontSize = isVerySmallScreen
+            ? 8.0
+            : (isSmallScreen ? 10.0 : 12.0);
         final padding = isVerySmallScreen ? 4.0 : (isSmallScreen ? 6.0 : 8.0);
 
         return Container(
@@ -653,7 +620,6 @@ class _MyHomePageState extends State<MyHomePage>
           height: screenHeight,
           child: Stack(
             children: [
-
               Positioned.fill(
                 child: Image.asset(
                   backgroundAsset,
@@ -671,69 +637,72 @@ class _MyHomePageState extends State<MyHomePage>
                     final screenWidth = constraints.maxWidth;
                     final isSmallScreen = screenWidth < 600;
                     final isVerySmallScreen = screenWidth < 400;
-                    
+
                     return Container(
-                      padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 8 : 16),
-                      child: isVerySmallScreen 
-                        ? Column(
-                            children: [
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isSmallScreen ? 8 : 16,
+                      ),
+                      child: isVerySmallScreen
+                          ? Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    needIndicator(
+                                      iconPath: 'assets/Icon_fé.png',
+                                      value: hunger,
+                                    ),
+                                    needIndicator(
+                                      iconPath:
+                                          'assets/Icon_entretenimento.png',
+                                      value: happiness,
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8),
 
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  needIndicator(
-                                    iconPath: 'assets/Icon_fé.png',
-                                    value: hunger,
-                                  ),
-                                  needIndicator(
-                                    iconPath: 'assets/Icon_entretenimento.png',
-                                    value: happiness,
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 8),
-
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  needIndicator(
-                                    iconPath: 'assets/Icon_fervor.png',
-                                    value: energy,
-                                  ),
-                                  needIndicator(
-                                    iconPath: 'assets/Icon_vitalidade.png',
-                                    value: vitality,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              needIndicator(
-                                iconPath: 'assets/Icon_fé.png',
-                                value: hunger,
-                              ),
-                              needIndicator(
-                                iconPath: 'assets/Icon_entretenimento.png',
-                                value: happiness,
-                              ),
-                              needIndicator(
-                                iconPath: 'assets/Icon_fervor.png',
-                                value: energy,
-                              ),
-                              needIndicator(
-                                iconPath: 'assets/Icon_vitalidade.png',
-                                value: vitality,
-                              ),
-                            ],
-                          ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    needIndicator(
+                                      iconPath: 'assets/Icon_fervor.png',
+                                      value: energy,
+                                    ),
+                                    needIndicator(
+                                      iconPath: 'assets/Icon_vitalidade.png',
+                                      value: vitality,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                needIndicator(
+                                  iconPath: 'assets/Icon_fé.png',
+                                  value: hunger,
+                                ),
+                                needIndicator(
+                                  iconPath: 'assets/Icon_entretenimento.png',
+                                  value: happiness,
+                                ),
+                                needIndicator(
+                                  iconPath: 'assets/Icon_fervor.png',
+                                  value: energy,
+                                ),
+                                needIndicator(
+                                  iconPath: 'assets/Icon_vitalidade.png',
+                                  value: vitality,
+                                ),
+                              ],
+                            ),
                     );
                   },
                 ),
               ),
-
 
               Positioned(
                 top: screenHeight * 0.25,
@@ -744,12 +713,20 @@ class _MyHomePageState extends State<MyHomePage>
                     final navScreenWidth = constraints.maxWidth;
                     final isSmallScreen = navScreenWidth < 600;
                     final isVerySmallScreen = navScreenWidth < 400;
-                    
-                    final navArrowSize = isVerySmallScreen ? 40.0 : (isSmallScreen ? 45.0 : arrowSize);
-                    final titleFontSize = isVerySmallScreen ? 14.0 : (isSmallScreen ? 18.0 : 24.0);
-                    final titlePadding = isVerySmallScreen ? 12.0 : (isSmallScreen ? 16.0 : 20.0);
-                    final spacing = isVerySmallScreen ? 16.0 : (isSmallScreen ? 20.0 : 24.0);
-                    
+
+                    final navArrowSize = isVerySmallScreen
+                        ? 40.0
+                        : (isSmallScreen ? 45.0 : arrowSize);
+                    final titleFontSize = isVerySmallScreen
+                        ? 14.0
+                        : (isSmallScreen ? 18.0 : 24.0);
+                    final titlePadding = isVerySmallScreen
+                        ? 12.0
+                        : (isSmallScreen ? 16.0 : 20.0);
+                    final spacing = isVerySmallScreen
+                        ? 16.0
+                        : (isSmallScreen ? 20.0 : 24.0);
+
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -774,7 +751,10 @@ class _MyHomePageState extends State<MyHomePage>
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.7),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Color(0xFFb29c48), width: 2),
+                            border: Border.all(
+                              color: Color(0xFFb29c48),
+                              width: 2,
+                            ),
                           ),
                           child: Text(
                             _getPageTitle(_selectedIndex),
@@ -799,7 +779,8 @@ class _MyHomePageState extends State<MyHomePage>
                           size: navArrowSize,
                           onPressed: () {
                             setState(() {
-                              _selectedIndex = (_selectedIndex + 1) % _pages.length;
+                              _selectedIndex =
+                                  (_selectedIndex + 1) % _pages.length;
                               _pageController.jumpToPage(_selectedIndex);
                             });
                           },
@@ -818,15 +799,14 @@ class _MyHomePageState extends State<MyHomePage>
                     AnimatedBuilder(
                       animation: _penitenteAnimation,
                       builder: (context, child) {
-
                         final equippedSkin = inventorySkins.firstWhere(
                           (skin) => skin['equipped'] == true,
                           orElse: () => inventorySkins[0],
                         );
                         return Image.asset(
-                          _penitenteAnimation.value == 1 
-                            ? equippedSkin['img'] 
-                            : equippedSkin['img2'] ?? equippedSkin['img'],
+                          _penitenteAnimation.value == 1
+                              ? equippedSkin['img']
+                              : equippedSkin['img2'] ?? equippedSkin['img'],
                           width: characterWidth,
                           height: characterHeight,
                         );
@@ -845,7 +825,6 @@ class _MyHomePageState extends State<MyHomePage>
                   ],
                 ),
               ),
-
 
               Positioned(
                 left: screenWidth * 0.05,
@@ -868,7 +847,30 @@ class _MyHomePageState extends State<MyHomePage>
                             width: screenWidth < 600 ? 48 : 64,
                             height: screenWidth < 600 ? 48 : 64,
                           ),
-                          onPressed: feed,
+                          onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => FaithShopPage(
+                                        currentCoins: coins,
+                                        onBuyPotion: (item) {
+                                          setState(() {
+                                            coins -= item['price'] as int;
+                                            inventoryPotions.add({
+                                              'name': item['name'],
+                                              'desc': item['desc'],
+                                              'img': item['img'],
+                                              'quantity': 1,
+                                              'type': 'faith',
+                                            });
+                                          });
+                                          _savePetStatus();
+                                          _saveInventory();
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+
                           tooltip: 'Orar',
                         ),
                       )
@@ -885,10 +887,9 @@ class _MyHomePageState extends State<MyHomePage>
                         ),
                         child: IconButton(
                           icon: Image.asset(
-
-                            _selectedIndex == 3 
-                              ? 'assets/Frasco_0.png' 
-                              : _selectedIndex == 2 
+                            _selectedIndex == 3
+                                ? 'assets/Frasco_0.png'
+                                : _selectedIndex == 2
                                 ? 'assets/Icon_vaso_fervor.png'
                                 : 'assets/Icon_espada.png',
                             width: screenWidth < 600 ? 48 : 64,
@@ -904,13 +905,36 @@ class _MyHomePageState extends State<MyHomePage>
                                   ),
                                 ),
                               );
-                            } else if (_selectedIndex == 2) {
-                              sleep();
+                                      } else if (_selectedIndex == 2) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => FervorShopPage(
+                  currentCoins: coins,
+                  onBuyPotion: (item) {
+                    setState(() {
+                      coins -= item['price'] as int;
+                      inventoryPotions.add({
+                        'name': item['name'],
+                        'desc': item['desc'],
+                        'img': item['img'],
+                        'quantity': 1,
+                        'type': 'fervor',
+                      });
+                    });
+                    _savePetStatus();
+                    _saveInventory();
+                  },
+                ),
+              ),
+            );
+          } else {
+                                    play();
+
                             }
                           },
-                          tooltip: _selectedIndex == 3 
-                            ? 'Loja de Frascos'
-                            : _selectedIndex == 2 
+                          tooltip: _selectedIndex == 3
+                              ? 'Loja de Frascos'
+                              : _selectedIndex == 2
                               ? 'Descansar'
                               : 'Espada',
                         ),
@@ -1020,12 +1044,14 @@ class _MyHomePageState extends State<MyHomePage>
                   ),
                   Row(
                     children: [
-
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Color(0xFFb29c48), width: 1),
+                          border: Border.all(
+                            color: Color(0xFFb29c48),
+                            width: 1,
+                          ),
                         ),
                         child: IconButton(
                           icon: Icon(
@@ -1110,7 +1136,7 @@ class _MyHomePageState extends State<MyHomePage>
                                 'quantity': 1,
                                 'type': 'skin',
                                 'equipped': true,
-                              }
+                              },
                             ];
                           });
                           if (mounted) {
@@ -1135,7 +1161,6 @@ class _MyHomePageState extends State<MyHomePage>
         color: Color(0xFF2C1810),
         child: PageView(
           controller: _pageController,
-          physics: const NeverScrollableScrollPhysics(),
           onPageChanged: (index) {
             setState(() {
               _selectedIndex = index;
@@ -1162,5 +1187,3 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 }
-
-
