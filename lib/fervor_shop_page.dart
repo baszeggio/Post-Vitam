@@ -27,33 +27,32 @@ class FervorShopPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-        final potions = [
+    final potions = [
       {
         'img': 'assets/Pano_1.png',
         'name': 'Beijo Fervoroso',
-        'desc': 'Um toque de calor sagrado.',
+        'desc': 'Restaura 15 pontos de fervor.',
         'price': 1500,
       },
       {
         'img': 'assets/Pano_2.png',
         'name': 'Beijo Fervoroso Prateado',
-        'desc': 'Intensifica a chama do espírito.',
+        'desc': 'Restaura 25 pontos de fervor.',
         'price': 3000,
       },
       {
         'img': 'assets/Pano_3.png',
         'name': 'Beijo Fervoroso Dourado',
-        'desc': 'Inflama a fé com brilho divino.',
+        'desc': 'Restaura 40 pontos de fervor.',
         'price': 5000,
       },
       {
         'img': 'assets/Pano_4.png',
         'name': 'Lenço de Crisanta',
-        'desc': 'Lágrimas de fervor eterno.',
+        'desc': 'Restaura 100 pontos de fé.',
         'price': 8000,
       },
     ];
-
 
     return Scaffold(
       backgroundColor: Color(0xFF2C1810),
