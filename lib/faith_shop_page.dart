@@ -31,25 +31,25 @@ class FaithShopPage extends StatelessWidget {
       {
         'img': 'assets/Santa_Chaga_1.png',
         'name': 'Santa Chaga do Atrito',
-        'desc': 'Aumenta a Fé com a dor do esforço.',
+        'desc': 'Restaura 15 pontos de fé.',
         'price': 1000,
       },
       {
         'img': 'assets/Santa_Chaga_2.png',
         'name': 'Santa Chaga da Contrição',
-        'desc': 'Purifica a alma com arrependimento.',
+        'desc': 'Restaura 25 pontos de fé.',
         'price': 2000,
       },
       {
         'img': 'assets/Santa_Chaga_3.png',
         'name': 'Santa Chaga da Compunção',
-        'desc': 'Eleva o espírito pela culpa sincera.',
+        'desc': 'Restaura 40 pontos de fé.',
         'price': 3000,
       },
       {
         'img': 'assets/Santa_Chaga_4.png',
         'name': 'Santa Chagada da Abnegação',
-        'desc': 'Entrega total à fé. Sacrifício nobre.',
+        'desc': 'Restaura 100 pontos de fé.',
         'price': 5000,
       },
     ];
