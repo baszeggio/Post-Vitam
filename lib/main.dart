@@ -1000,7 +1000,7 @@ class _MyHomePageState extends State<MyHomePage>
     ),
     _buildResponsivePage(
       backgroundAsset: 'assets/background_alb.png',
-      buttonText: 'Meditar',
+      buttonText: '',
       onPressed: increaseVitality,
     ),
   ];
