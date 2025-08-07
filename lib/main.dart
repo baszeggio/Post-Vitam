@@ -61,14 +61,18 @@ class _MyHomePageState extends State<MyHomePage>
       'equipped': true,
     },
   ];
-  final PageController _pageController = PageController();
+  late final PageController _pageController;
   int _selectedIndex = 0;
+  late int _rawPageIndex;
+  static const int _infiniteLoopBaseMultiplier = 1000;
 
   late AnimationController _penitenteController;
   late Animation<int> _penitenteAnimation;
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
   bool _isLoading = true;
+  
+  
 
   Timer? _degradationTimer;
 
@@ -123,6 +127,11 @@ class _MyHomePageState extends State<MyHomePage>
       end: 2,
     ).animate(_penitenteController);
 
+    // Inicializa PageController para loop infinito
+    _rawPageIndex = _pages.length * _infiniteLoopBaseMultiplier;
+    _selectedIndex = 0;
+    _pageController = PageController(initialPage: _rawPageIndex);
+
     _initializeApp();
   }
 
@@ -176,6 +185,7 @@ class _MyHomePageState extends State<MyHomePage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _penitenteController.dispose();
+    _pageController.dispose();
     _degradationTimer?.cancel();
     super.dispose();
   }
@@ -734,12 +744,7 @@ class _MyHomePageState extends State<MyHomePage>
                           icon: Icons.arrow_left,
                           size: navArrowSize,
                           onPressed: () {
-                            setState(() {
-                              _selectedIndex =
-                                  (_selectedIndex - 1 + _pages.length) %
-                                  _pages.length;
-                              _pageController.jumpToPage(_selectedIndex);
-                            });
+                            _navigateToPage(_selectedIndex - 1);
                           },
                         ),
                         SizedBox(width: spacing),
@@ -778,11 +783,7 @@ class _MyHomePageState extends State<MyHomePage>
                           icon: Icons.arrow_right,
                           size: navArrowSize,
                           onPressed: () {
-                            setState(() {
-                              _selectedIndex =
-                                  (_selectedIndex + 1) % _pages.length;
-                              _pageController.jumpToPage(_selectedIndex);
-                            });
+                            _navigateToPage(_selectedIndex + 1);
                           },
                         ),
                       ],
@@ -1159,17 +1160,53 @@ class _MyHomePageState extends State<MyHomePage>
       ),
       body: Container(
         color: Color(0xFF2C1810),
-        child: PageView(
+        child: PageView.builder(
           controller: _pageController,
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
           onPageChanged: (index) {
+            final pagesLen = _pages.length;
             setState(() {
-              _selectedIndex = index;
+              _rawPageIndex = index;
+              _selectedIndex = ((index % pagesLen) + pagesLen) % pagesLen;
             });
           },
-          children: _pages,
+          itemBuilder: (context, index) {
+            final pages = _pages;
+            final pagesLen = pages.length;
+            final page = pages[((index % pagesLen) + pagesLen) % pagesLen];
+            return page;
+          },
         ),
       ),
     );
+  }
+
+  void _navigateToPage(int logicalTargetIndex) {
+    // Com PageView.builder infinito, navegamos ajustando o índice bruto
+    final pagesLen = _pages.length;
+    if (pagesLen == 0) return;
+
+    final normalizedTarget = ((logicalTargetIndex % pagesLen) + pagesLen) % pagesLen;
+
+    // Encontrar um índice bruto próximo que mostre a página desejada
+    int base = _rawPageIndex - (_rawPageIndex % pagesLen);
+    int candidate = base + normalizedTarget;
+
+    // Escolhe o candidato mais próximo do índice atual
+    if ((candidate - _rawPageIndex).abs() > (candidate + pagesLen - _rawPageIndex).abs()) {
+      candidate += pagesLen;
+    } else if ((candidate - _rawPageIndex).abs() > (candidate - pagesLen - _rawPageIndex).abs()) {
+      candidate -= pagesLen;
+    }
+
+    if (candidate != _rawPageIndex) {
+      _pageController.animateToPage(
+        candidate,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   String _getPageTitle(int index) {
