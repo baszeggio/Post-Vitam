@@ -529,10 +529,10 @@ class DatabaseHelper {
       // Limpar inventário atual
       await db.delete('inventory');
       
-      // Salvar poções
+      // Salvar poções (mantendo o tipo real: potion/faith/fervor)
       for (var potion in potions) {
         await db.insert('inventory', {
-          'item_type': 'potion',
+          'item_type': potion['type'] ?? 'potion',
           'item_name': potion['name'],
           'item_img': potion['img'],
           'item_img2': null,

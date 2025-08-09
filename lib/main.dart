@@ -6,6 +6,8 @@ import 'dart:async';
 import 'dao/postvitamdao.dart';
 import 'potions_shop_page.dart';
 import 'skins_shop_page.dart';
+import 'package:flame/game.dart';
+import 'games/cave_hunt_game.dart';
 import 'inventory_page.dart';
 import 'services/notification_service.dart';
 
@@ -86,40 +88,58 @@ class _MyHomePageState extends State<MyHomePage>
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
   bool _isLoading = true;
-  
-  
+
+  // Controle de notificações para evitar spam
+  static const Duration _notificationCooldown = Duration(minutes: 30);
+  final Map<String, DateTime> _lastNotificationTimes = {};
+  bool _isInForeground = true;
 
   Timer? _degradationTimer;
 
+  bool _canSendNotification(String key) {
+    final last = _lastNotificationTimes[key];
+    if (last == null) return true;
+    return DateTime.now().difference(last) >= _notificationCooldown;
+  }
+
+  void _markNotificationSent(String key) {
+    _lastNotificationTimes[key] = DateTime.now();
+  }
+
   void _checkAndSendNotifications() {
-    if (hunger <= 20) {
+    // Evita spam quando o app está em primeiro plano
+    if (_isInForeground) return;
+
+    if (hunger <= 20 && _canSendNotification('low_hunger')) {
       NotificationService.showGameNotification(
         title: 'Sua Fé está baixa!',
         body: 'Seu Penitente precisa orar na Igreja para restaurar sua Fé.',
       );
+      _markNotificationSent('low_hunger');
     }
 
-    if (energy <= 20) {
+    if (energy <= 20 && _canSendNotification('low_energy')) {
       NotificationService.showGameNotification(
         title: 'Seu Fervor está baixo!',
-        body:
-            'Seu Penitente precisa descansar nas Montanhas para recuperar o Fervor.',
+        body: 'Seu Penitente precisa descansar nas Montanhas para recuperar o Fervor.',
       );
+      _markNotificationSent('low_energy');
     }
 
-    if (vitality <= 15) {
+    if (vitality <= 15 && _canSendNotification('critical_vitality')) {
       NotificationService.showGameNotification(
         title: 'Vitalidade Crítica!',
-        body:
-            'Use um frasco ou medite em Albero para restaurar a Vitalidade do seu Penitente.',
+        body: 'Use um frasco ou medite em Albero para restaurar a Vitalidade do seu Penitente.',
       );
+      _markNotificationSent('critical_vitality');
     }
 
-    if (hunger <= 30 && happiness <= 30 && energy <= 30) {
+    if (hunger <= 30 && happiness <= 30 && energy <= 30 && _canSendNotification('multi_low')) {
       NotificationService.showGameNotification(
         title: 'Seu Penitente precisa de atenção!',
         body: 'Múltiplos status estão baixos. Cuide do seu Penitente!',
       );
+      _markNotificationSent('multi_low');
     }
   }
 
@@ -261,6 +281,60 @@ class _MyHomePageState extends State<MyHomePage>
     return false;
   }
 
+  bool buyFaithPotion(Map<String, dynamic> potion) {
+    final price = potion['price'] as int;
+    if (coins >= price) {
+      setState(() {
+        coins -= price;
+        final existingIndex = inventoryPotions.indexWhere(
+          (item) => item['name'] == potion['name'],
+        );
+        if (existingIndex != -1) {
+          inventoryPotions[existingIndex]['quantity'] += 1;
+        } else {
+          inventoryPotions.add({
+            'img': potion['img'],
+            'name': potion['name'],
+            'desc': potion['desc'],
+            'quantity': 1,
+            'type': 'faith',
+          });
+        }
+      });
+      _savePetStatus();
+      _saveInventory();
+      return true;
+    }
+    return false;
+  }
+
+  bool buyFervorPotion(Map<String, dynamic> potion) {
+    final price = potion['price'] as int;
+    if (coins >= price) {
+      setState(() {
+        coins -= price;
+        final existingIndex = inventoryPotions.indexWhere(
+          (item) => item['name'] == potion['name'],
+        );
+        if (existingIndex != -1) {
+          inventoryPotions[existingIndex]['quantity'] += 1;
+        } else {
+          inventoryPotions.add({
+            'img': potion['img'],
+            'name': potion['name'],
+            'desc': potion['desc'],
+            'quantity': 1,
+            'type': 'fervor',
+          });
+        }
+      });
+      _savePetStatus();
+      _saveInventory();
+      return true;
+    }
+    return false;
+  }
+
   bool buySkin(Map<String, dynamic> skin) {
     final price = skin['price'] as int;
     if (coins >= price) {
@@ -308,16 +382,44 @@ class _MyHomePageState extends State<MyHomePage>
         inventoryPotions[index]['quantity'] > 0) {
       final potion = inventoryPotions[index];
       final potionName = potion['name'] as String;
+      final potionType = (potion['type'] as String?) ?? 'potion';
+      final potionDesc = (potion['desc'] as String?) ?? '';
 
       setState(() {
-        if (potionName.contains('Pequeno')) {
-          vitality = (vitality + 15).clamp(0, 100);
-        } else if (potionName.contains('Médio')) {
-          vitality = (vitality + 25).clamp(0, 100);
-        } else if (potionName.contains('Grande')) {
-          vitality = (vitality + 40).clamp(0, 100);
-        } else if (potionName.contains('Milagre')) {
-          vitality = (vitality * 1.10).round();
+        int extractAmountFromDesc() {
+          final match = RegExp(r"(\d+)").firstMatch(potionDesc);
+          if (match != null) {
+            return int.tryParse(match.group(1)!) ?? 0;
+          }
+          if (potionName.contains('Pequeno')) return 15;
+          if (potionName.contains('Médio')) return 25;
+          if (potionName.contains('Grande')) return 40;
+          if (potionName.contains('100')) return 100;
+          return 0;
+        }
+
+        if (potionType == 'faith') {
+          final amount = extractAmountFromDesc();
+          hunger = (hunger + amount).clamp(0, 100);
+        } else if (potionType == 'fervor') {
+          final amount = extractAmountFromDesc();
+          energy = (energy + amount).clamp(0, 100);
+        } else {
+          // Vitalidade (frascos)
+          if (potionName.contains('Milagre')) {
+            vitality = (vitality + 100).clamp(0, 100);
+          } else if (potionName.contains('Pequeno')) {
+            vitality = (vitality + 15).clamp(0, 100);
+          } else if (potionName.contains('Médio')) {
+            vitality = (vitality + 25).clamp(0, 100);
+          } else if (potionName.contains('Grande')) {
+            vitality = (vitality + 40).clamp(0, 100);
+          } else {
+            final amount = extractAmountFromDesc();
+            if (amount > 0) {
+              vitality = (vitality + amount).clamp(0, 100);
+            }
+          }
         }
 
         inventoryPotions[index]['quantity'] -= 1;
@@ -341,9 +443,11 @@ class _MyHomePageState extends State<MyHomePage>
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
+      _isInForeground = false;
       _savePetStatus();
       _saveInventory();
     } else if (state == AppLifecycleState.resumed) {
+      _isInForeground = true;
       _applyStatusDegradation();
     }
   }
@@ -868,20 +972,7 @@ class _MyHomePageState extends State<MyHomePage>
                                     MaterialPageRoute(
                                       builder: (context) => FaithShopPage(
                                         currentCoins: coins,
-                                        onBuyPotion: (item) {
-                                          setState(() {
-                                            coins -= item['price'] as int;
-                                            inventoryPotions.add({
-                                              'name': item['name'],
-                                              'desc': item['desc'],
-                                              'img': item['img'],
-                                              'quantity': 1,
-                                              'type': 'faith',
-                                            });
-                                          });
-                                          _savePetStatus();
-                                          _saveInventory();
-                                        },
+                                        onBuyPotion: buyFaithPotion,
                                       ),
                                     ),
                                   );
@@ -926,27 +1017,109 @@ class _MyHomePageState extends State<MyHomePage>
               MaterialPageRoute(
                 builder: (context) => FervorShopPage(
                   currentCoins: coins,
-                  onBuyPotion: (item) {
-                    setState(() {
-                      coins -= item['price'] as int;
-                      inventoryPotions.add({
-                        'name': item['name'],
-                        'desc': item['desc'],
-                        'img': item['img'],
-                        'quantity': 1,
-                        'type': 'fervor',
-                      });
-                    });
-                    _savePetStatus();
-                    _saveInventory();
-                  },
+                  onBuyPotion: buyFervorPotion,
                 ),
               ),
             );
           } else {
-                                    play();
-
-                            }
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => GameWidget(
+                  game: CaveHuntGame(
+                    onFinish: (coinsEarned) {
+                      setState(() {
+                        coins += coinsEarned;
+                      });
+                      _savePetStatus();
+                    },
+                  ),
+                  overlayBuilderMap: {
+                    'end': (ctx, game) {
+                      final g = game as CaveHuntGame;
+                      return AlertDialog(
+                        backgroundColor: const Color(0xFF2C1810),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: Color(0xFFb29c48), width: 2),
+                        ),
+                        title: const Text(
+                          'Fim da Caça',
+                          style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel'),
+                        ),
+                        content: Text(
+                          'Você ganhou ${g.score * 5} moedas.',
+                          style: const TextStyle(color: Colors.white, fontFamily: 'Pixel'),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(ctx).pop(),
+                            child: const Text('OK', style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel')),
+                          ),
+                        ],
+                      );
+                    },
+                    'hud': (ctx, game) {
+                      final g = game as CaveHuntGame;
+                      return SafeArea(
+                        child: Align(
+                          alignment: Alignment.topRight,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF2C1810),
+                                foregroundColor: const Color(0xFFb29c48),
+                              ),
+                              onPressed: () {
+                                g.pauseEngine();
+                                showDialog(
+                                  context: ctx,
+                                  builder: (c) => AlertDialog(
+                                    backgroundColor: const Color(0xFF2C1810),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      side: const BorderSide(color: Color(0xFFb29c48), width: 2),
+                                    ),
+                                    title: const Text(
+                                      'Sair do jogo',
+                                      style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel'),
+                                    ),
+                                    content: const Text(
+                                      'Tem certeza que deseja sair? Seu progresso nesta rodada não será contado.',
+                                      style: TextStyle(color: Colors.white, fontFamily: 'Pixel'),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(c).pop();
+                                          g.resumeEngine();
+                                        },
+                                        child: const Text('Continuar', style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel')),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(c).pop();
+                                          Navigator.of(ctx).pop();
+                                        },
+                                        child: const Text('Sair', style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel')),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.exit_to_app),
+                              label: const Text('Sair', style: TextStyle(fontFamily: 'Pixel')),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  },
+                  initialActiveOverlays: const ['hud'],
+                ),
+              ),
+            );
+          }
                           },
                           tooltip: _selectedIndex == 3
                               ? 'Loja de Frascos'
@@ -1006,7 +1179,7 @@ class _MyHomePageState extends State<MyHomePage>
     ),
     _buildResponsivePage(
       backgroundAsset: 'assets/background_cav.png',
-      buttonText: 'Explorar',
+      buttonText: '',
       onPressed: play,
     ),
     _buildResponsivePage(

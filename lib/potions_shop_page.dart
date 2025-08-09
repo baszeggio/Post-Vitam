@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ShopPage extends StatelessWidget {
-  final Function(Map<String, dynamic>) onBuyPotion;
+  final bool Function(Map<String, dynamic>) onBuyPotion;
   final int currentCoins;
   
   const ShopPage({
@@ -49,7 +49,7 @@ class ShopPage extends StatelessWidget {
       {
         'img': 'assets/Frasco_4.png',
         'name': 'Frasco do Milagre',
-        'desc': 'Aumenta o máximo de vitalidade em 10%.',
+        'desc': 'Restaura 100 pontos de vitalidade.',
         'price': 5000,
       },
     ];
@@ -154,41 +154,39 @@ class ShopPage extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      // Verificar se tem dinheiro suficiente
-                      if (currentCoins >= (potion['price'] as int)) {
-                        // Comprar o frasco
-                        onBuyPotion(potion);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Você comprou ${potion['name']}!',
-                              style: TextStyle(
-                                fontFamily: 'Pixel',
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            backgroundColor: Color(0xFFb29c48),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      } else {
-                        // Mostrar mensagem de dinheiro insuficiente
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Moedas insuficientes!',
-                              style: TextStyle(
-                                fontFamily: 'Pixel',
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            backgroundColor: Colors.red,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      }
-                    },
+                     onTap: () {
+                       final success = onBuyPotion(potion);
+                       if (success) {
+                         ScaffoldMessenger.of(context).showSnackBar(
+                           SnackBar(
+                             content: Text(
+                               'Você comprou ${potion['name']}!',
+                               style: TextStyle(
+                                 fontFamily: 'Pixel',
+                                 fontWeight: FontWeight.bold,
+                               ),
+                             ),
+                             backgroundColor: Color(0xFFb29c48),
+                             duration: Duration(seconds: 2),
+                           ),
+                         );
+                         Navigator.of(context).pop();
+                       } else {
+                         ScaffoldMessenger.of(context).showSnackBar(
+                           SnackBar(
+                             content: Text(
+                               'Moedas insuficientes!',
+                               style: TextStyle(
+                                 fontFamily: 'Pixel',
+                                 fontWeight: FontWeight.bold,
+                               ),
+                             ),
+                             backgroundColor: Colors.red,
+                             duration: Duration(seconds: 2),
+                           ),
+                         );
+                       }
+                     },
                     child: Padding(
                       padding: EdgeInsets.all(16),
                       child: Row(

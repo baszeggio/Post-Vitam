@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FervorShopPage extends StatelessWidget {
-  final Function(Map<String, dynamic>) onBuyPotion;
+  final bool Function(Map<String, dynamic>) onBuyPotion;
   final int currentCoins;
 
   const FervorShopPage({
@@ -32,25 +32,25 @@ class FervorShopPage extends StatelessWidget {
         'img': 'assets/Pano_1.png',
         'name': 'Beijo Fervoroso',
         'desc': 'Restaura 15 pontos de fervor.',
-        'price': 1500,
+        'price': 1000,
       },
       {
         'img': 'assets/Pano_2.png',
         'name': 'Beijo Fervoroso Prateado',
         'desc': 'Restaura 25 pontos de fervor.',
-        'price': 3000,
+        'price': 2000,
       },
       {
         'img': 'assets/Pano_3.png',
         'name': 'Beijo Fervoroso Dourado',
         'desc': 'Restaura 40 pontos de fervor.',
-        'price': 5000,
+        'price': 3000,
       },
       {
         'img': 'assets/Pano_4.png',
         'name': 'Lenço de Crisanta',
-        'desc': 'Restaura 100 pontos de fé.',
-        'price': 8000,
+        'desc': 'Restaura 100 pontos de fervor.',
+        'price': 5000,
       },
     ];
 
@@ -152,10 +152,8 @@ class FervorShopPage extends StatelessWidget {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
                     onTap: () {
-                      // Verificar se tem dinheiro suficiente
-                      if (currentCoins >= (potion['price'] as int)) {
-                        // Comprar o frasco
-                        onBuyPotion(potion);
+                      final success = onBuyPotion(potion);
+                      if (success) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
@@ -169,8 +167,8 @@ class FervorShopPage extends StatelessWidget {
                             duration: Duration(seconds: 2),
                           ),
                         );
+                        Navigator.of(context).pop();
                       } else {
-                        // Mostrar mensagem de dinheiro insuficiente
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(

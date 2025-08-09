@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FaithShopPage extends StatelessWidget {
-  final Function(Map<String, dynamic>) onBuyPotion;
+  final bool Function(Map<String, dynamic>) onBuyPotion;
   final int currentCoins;
 
   const FaithShopPage({
@@ -152,10 +152,8 @@ class FaithShopPage extends StatelessWidget {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
                     onTap: () {
-                      // Verificar se tem dinheiro suficiente
-                      if (currentCoins >= (potion['price'] as int)) {
-                        // Comprar o frasco
-                        onBuyPotion(potion);
+                      final success = onBuyPotion(potion);
+                      if (success) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
@@ -169,8 +167,8 @@ class FaithShopPage extends StatelessWidget {
                             duration: Duration(seconds: 2),
                           ),
                         );
+                        Navigator.of(context).pop();
                       } else {
-                        // Mostrar mensagem de dinheiro insuficiente
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
