@@ -72,6 +72,7 @@ class FervorShopPage extends StatelessWidget {
                 color: Color(0xFFb29c48),
                 fontFamily: 'Pixel',
                 fontWeight: FontWeight.bold,
+                fontSize: 20,
               ),
             ),
             SizedBox(width: 16),
@@ -89,7 +90,7 @@ class FervorShopPage extends StatelessWidget {
                     style: TextStyle(
                       color: Color(0xFFb29c48),
                       fontFamily: 'Pixel',
-                      fontSize: 14,
+                      fontSize: 16,
                     ),
                   ),
                   SizedBox(width: 8),
@@ -228,7 +229,7 @@ class FervorShopPage extends StatelessWidget {
                                     color: Color(0xFFb29c48),
                                     fontFamily: 'Pixel',
                                     fontWeight: FontWeight.bold,
-                                    fontSize: fontSize,
+                                  fontSize: fontSize + 2,
                                     shadows: [
                                       Shadow(
                                         color: Colors.black,
@@ -244,7 +245,7 @@ class FervorShopPage extends StatelessWidget {
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.8),
                                     fontFamily: 'Pixel',
-                                    fontSize: descFontSize,
+                                  fontSize: descFontSize + 2,
                                     shadows: [
                                       Shadow(
                                         color: Colors.black,
@@ -279,7 +280,7 @@ class FervorShopPage extends StatelessWidget {
                                   style: TextStyle(
                                     color: Color(0xFFb29c48),
                                     fontFamily: 'Pixel',
-                                    fontSize: 12,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
