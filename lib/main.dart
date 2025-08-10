@@ -769,9 +769,9 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
 
-              // Blocos de status alinhados em linha no canto superior esquerdo
+              // Blocos de status alinhados em linha no canto superior esquerdo (abaixados para não sobrepor configurações)
               Positioned(
-                top: screenHeight * 0.07,
+                top: screenHeight * 0.11,
                 left: 12,
                 child: Row(
                   children: [
@@ -787,7 +787,7 @@ class _MyHomePageState extends State<MyHomePage>
               ),
 
               Positioned(
-                top: screenHeight * 0.18,
+                top: screenHeight * 0.23,
                 left: 0,
                 right: 0,
                 child: LayoutBuilder(
@@ -1145,9 +1145,9 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
 
-              // Dinheiro no topo direito
+              // Dinheiro no topo direito (abaixado para não sobrepor configurações)
               Positioned(
-                top: screenHeight * 0.07,
+                top: screenHeight * 0.11,
                 right: screenWidth * 0.05,
                 child: Container(
                   width: 110,
@@ -1284,26 +1284,64 @@ class _MyHomePageState extends State<MyHomePage>
 
     return Scaffold(
       appBar: null,
-      body: Container(
-        color: Color(0xFF2C1810),
-        child: PageView.builder(
-          controller: _pageController,
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          onPageChanged: (index) {
-            final pagesLen = _pages.length;
-            setState(() {
-              _rawPageIndex = index;
-              _selectedIndex = ((index % pagesLen) + pagesLen) % pagesLen;
-            });
-          },
-          itemBuilder: (context, index) {
-            final pages = _pages;
-            final pagesLen = pages.length;
-            final page = pages[((index % pagesLen) + pagesLen) % pagesLen];
-            return page;
-          },
-        ),
+      body: Stack(
+        children: [
+          Container(
+            color: Color(0xFF2C1810),
+            child: PageView.builder(
+              controller: _pageController,
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              onPageChanged: (index) {
+                final pagesLen = _pages.length;
+                setState(() {
+                  _rawPageIndex = index;
+                  _selectedIndex = ((index % pagesLen) + pagesLen) % pagesLen;
+                });
+              },
+              itemBuilder: (context, index) {
+                final pages = _pages;
+                final pagesLen = pages.length;
+                final page = pages[((index % pagesLen) + pagesLen) % pagesLen];
+                return page;
+              },
+            ),
+          ),
+          // Botão de Configurações (canto superior direito)
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8.0, right: 8.0),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(24),
+                    onTap: _openSettingsPanel,
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4A2C1A).withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: const Color(0xFFb29c48), width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(10.0),
+                        child: Icon(Icons.settings, color: Color(0xFFb29c48), size: 22),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1348,5 +1386,166 @@ class _MyHomePageState extends State<MyHomePage>
       default:
         return '';
     }
+  }
+
+  void _openSettingsPanel() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: false,
+      builder: (context) {
+        return SafeArea(
+          child: Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2C1810),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFb29c48), width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    Icon(Icons.settings, color: Color(0xFFb29c48)),
+                    SizedBox(width: 8),
+                    Text(
+                      'Configurações',
+                      style: TextStyle(
+                        fontFamily: 'Pixel',
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFb29c48),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4A2C1A).withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFb29c48).withOpacity(0.6)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Debug: Resetar Progresso',
+                        style: TextStyle(
+                          fontFamily: 'Pixel',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFb29c48),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Zera o inventário e restaura os status para o início (100/100/100/100) com 20.000 moedas. Use para testes.',
+                        style: TextStyle(
+                          fontFamily: 'Pixel',
+                          fontSize: 12,
+                          color: Colors.white70,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFb29c48),
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  backgroundColor: const Color(0xFF2C1810),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  title: const Text(
+                                    'Tem certeza?',
+                                    style: TextStyle(
+                                      fontFamily: 'Pixel',
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFb29c48),
+                                    ),
+                                  ),
+                                  content: const Text(
+                                    'Essa ação vai resetar todo o progresso: inventário será limpo e os status voltarão ao início com 20.000 moedas.',
+                                    style: TextStyle(
+                                      fontFamily: 'Pixel',
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      child: const Text(
+                                        'Cancelar',
+                                        style: TextStyle(fontFamily: 'Pixel'),
+                                      ),
+                                      onPressed: () => Navigator.of(context).pop(false),
+                                    ),
+                                    TextButton(
+                                      child: const Text(
+                                        'Confirmar',
+                                        style: TextStyle(fontFamily: 'Pixel', color: Color(0xFFb29c48)),
+                                      ),
+                                      onPressed: () => Navigator.of(context).pop(true),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+
+                            if (confirm == true) {
+                              // Reseta banco e recarrega UI
+                              await _dbHelper.resetDatabase();
+                              await _applyDegradationOnline();
+                              await _loadInventory();
+                              if (mounted) Navigator.of(context).pop();
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Progresso resetado para o início.',
+                                      style: TextStyle(fontFamily: 'Pixel', fontWeight: FontWeight.bold),
+                                    ),
+                                    backgroundColor: Color(0xFFb29c48),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          icon: const Icon(Icons.restore),
+                          label: const Text('Resetar (Debug)', style: TextStyle(fontFamily: 'Pixel')),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

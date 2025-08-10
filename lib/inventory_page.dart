@@ -205,7 +205,7 @@ class _InventoryPageState extends State<InventoryPage>
                       fontSize: 18,
                     ),
                     tabs: [
-                      Tab(text: 'Frascos'),
+                      Tab(text: 'Consumíveis'),
                       Tab(text: 'Skins'),
                     ],
                   ),
