@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         final mq = MediaQuery.of(context);
-        // Aumenta levemente todas as fontes do app
+
         return MediaQuery(
           data: mq.copyWith(textScaleFactor: mq.textScaleFactor * 1.5),
           child: child ?? const SizedBox.shrink(),
@@ -97,7 +97,6 @@ class _MyHomePageState extends State<MyHomePage>
 
   bool _isLoading = true;
 
-  // Controle de notificações para evitar spam
   static const Duration _notificationCooldown = Duration(minutes: 30);
   final Map<String, DateTime> _lastNotificationTimes = {};
   bool _isInForeground = true;
@@ -115,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   void _checkAndSendNotifications() {
-    // Evita spam quando o app está em primeiro plano
+
     if (_isInForeground) return;
 
     if (hunger <= 20 && _canSendNotification('low_hunger')) {
@@ -170,7 +169,6 @@ class _MyHomePageState extends State<MyHomePage>
       end: 2,
     ).animate(_penitenteController);
 
-    // Inicializa PageController para loop infinito
     _rawPageIndex = _pages.length * _infiniteLoopBaseMultiplier;
     _selectedIndex = 0;
     _pageController = PageController(initialPage: _rawPageIndex);
@@ -181,8 +179,7 @@ class _MyHomePageState extends State<MyHomePage>
   Future<void> _initializeApp() async {
     print('=== INICIANDO APLICATIVO ===');
     try {
-      // Primeira execução após a migração: garantimos status máximos persistidos pelo DAO
-      // Depois, continuamos com a lógica normal
+
       await _applyDegradationOnline();
       await _loadInventory();
       _startDegradationTimer();
@@ -499,7 +496,7 @@ class _MyHomePageState extends State<MyHomePage>
             inventorySkins.add(item);
           }
         }
-        // Garante que a skin padrão sempre está presente e equipada na primeira vez
+
         if (inventorySkins.isEmpty ||
             inventorySkins.every((skin) => skin['name'] != 'Skin Padrão')) {
           inventorySkins.insert(0, {
@@ -512,7 +509,7 @@ class _MyHomePageState extends State<MyHomePage>
             'equipped': true,
           });
         }
-        // Garante que só uma skin está equipada
+
         bool anyEquipped = false;
         for (var skin in inventorySkins) {
           if (skin['equipped'] == true && !anyEquipped) {
@@ -745,7 +742,7 @@ class _MyHomePageState extends State<MyHomePage>
         final isPortrait = screenHeight > screenWidth;
 
         final isVerySmallScreen = screenWidth < 400;
-        // Aumento do tamanho do Penitente (~60% do base)
+
         final baseCharacterWidth = isPortrait
             ? screenWidth * 0.4
             : screenHeight * 0.3;
@@ -769,7 +766,6 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
 
-              // Blocos de status alinhados em linha no canto superior esquerdo (abaixados para não sobrepor configurações)
               Positioned(
                 top: screenHeight * 0.11,
                 left: 12,
@@ -1094,7 +1090,6 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
 
-              // Inventário centralizado embaixo, entre os botões de lojas
               Positioned(
                 bottom: screenHeight * 0.05,
                 left: 0,
@@ -1145,7 +1140,6 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
 
-              // Dinheiro no topo direito (abaixado para não sobrepor configurações)
               Positioned(
                 top: screenHeight * 0.11,
                 right: screenWidth * 0.05,
@@ -1182,7 +1176,6 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
 
-              // Loja de Skins (Nundinae) no canto inferior direito
               Positioned(
                 right: screenWidth * 0.05,
                 bottom: screenHeight * 0.05,
@@ -1261,7 +1254,7 @@ class _MyHomePageState extends State<MyHomePage>
       buttonText: '',
       onPressed: increaseVitality,
     ),
-    // Spelunca (Caverna) - por último
+    // Spelunca (Caverna)
     _buildResponsivePage(
       backgroundAsset: 'assets/background_cav.png',
       buttonText: '',
@@ -1288,7 +1281,7 @@ class _MyHomePageState extends State<MyHomePage>
                   Stack(
                     alignment: Alignment.center,
                     children: [
-                      // Halo suave dourado por trás do texto
+
                       Text(
                         'post vitam.',
                         textAlign: TextAlign.center,
@@ -1310,7 +1303,7 @@ class _MyHomePageState extends State<MyHomePage>
                           ],
                         ),
                       ),
-                      // Contorno preto
+
                       Text(
                         'post vitam.',
                         textAlign: TextAlign.center,
@@ -1323,7 +1316,7 @@ class _MyHomePageState extends State<MyHomePage>
                             ..color = Colors.black,
                         ),
                       ),
-                      // Preenchimento em degradê dourado
+
                       ShaderMask(
                         blendMode: BlendMode.srcIn,
                         shaderCallback: (Rect bounds) {
@@ -1331,10 +1324,10 @@ class _MyHomePageState extends State<MyHomePage>
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Color(0xFFF7E27E), // topo claro
+                              Color(0xFFF7E27E), 
                               Color(0xFFE6CC77),
-                              Color(0xFFb29c48), // dourado clássico do app
-                              Color(0xFF8C6F1D), // base mais escura
+                              Color(0xFFb29c48), 
+                              Color(0xFF8C6F1D), 
                             ],
                           ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
                         },
@@ -1387,7 +1380,7 @@ class _MyHomePageState extends State<MyHomePage>
               },
             ),
           ),
-          // Botão de Configurações (canto superior direito)
+          // Botão de Configurações
           SafeArea(
             child: Align(
               alignment: Alignment.topRight,
@@ -1427,17 +1420,15 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   void _navigateToPage(int logicalTargetIndex) {
-    // Com PageView.builder infinito, navegamos ajustando o índice bruto
+
     final pagesLen = _pages.length;
     if (pagesLen == 0) return;
 
     final normalizedTarget = ((logicalTargetIndex % pagesLen) + pagesLen) % pagesLen;
 
-    // Encontrar um índice bruto próximo que mostre a página desejada
     int base = _rawPageIndex - (_rawPageIndex % pagesLen);
     int candidate = base + normalizedTarget;
 
-    // Escolhe o candidato mais próximo do índice atual
     if ((candidate - _rawPageIndex).abs() > (candidate + pagesLen - _rawPageIndex).abs()) {
       candidate += pagesLen;
     } else if ((candidate - _rawPageIndex).abs() > (candidate - pagesLen - _rawPageIndex).abs()) {
@@ -1595,7 +1586,7 @@ class _MyHomePageState extends State<MyHomePage>
                             );
 
                             if (confirm == true) {
-                              // Reseta banco e recarrega UI
+
                               await _dbHelper.resetDatabase();
                               await _applyDegradationOnline();
                               await _loadInventory();

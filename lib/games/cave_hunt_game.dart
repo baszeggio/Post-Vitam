@@ -32,7 +32,7 @@ class CaveHuntGame extends FlameGame with TapDetector {
   /// Random para posições/valores
   final Random _random = Random();
 
-  /// Tamanho da moeda em pixels (maior para ficar mais aparente)
+  /// Tamanho da moeda em pixels
   static const double _coinRadius = 26.0;
 
   /// Limite máximo simultâneo de moedas em tela
@@ -105,9 +105,8 @@ class CaveHuntGame extends FlameGame with TapDetector {
     const double margin = _coinRadius + 8;
     if (bounds.x <= margin * 2 || bounds.y <= margin * 2) return;
 
-    // Spawna no topo, em X aleatório, ligeiramente abaixo do HUD
     final double x = _random.nextDouble() * (bounds.x - margin * 2) + margin;
-    final double y = 140 + margin; // área reservada ao HUD (HUD mais baixo)
+    final double y = 140 + margin;
 
     // Velocidade vertical aleatória (px/s)
     final double speedY = 120 + _random.nextDouble() * 160; // 120-280 px/s
@@ -157,7 +156,6 @@ class _Coin extends PositionComponent with TapCallbacks, HasGameRef<CaveHuntGame
   final double initialX;
   double _age = 0;
 
-  // Preenchimento via gradiente; não usamos _paint sólido
   static final ui.Paint _edge = ui.Paint()
     ..color = const Color(0xFF8a6f2a)
     ..style = ui.PaintingStyle.stroke
@@ -233,7 +231,7 @@ class _Coin extends PositionComponent with TapCallbacks, HasGameRef<CaveHuntGame
     final sway = sin(_age * 2.2) * 10; // ±10 px
     position = Vector2(initialX + sway, position.y + speedY * dt);
 
-    // Verifica chão (com pequena margem)
+    // Verifica chão
     final double groundY = gameRef.size.y - CaveHuntGame._coinRadius - 8;
     if (position.y >= groundY) {
       gameRef._onMissed();
@@ -264,9 +262,6 @@ class _ScoreText extends TextComponent with HasGameRef<CaveHuntGame> {
     text = 'Moedas: ${_game.score}';
   }
 }
-
-// Removido contador de tempo: minigame agora termina por vidas
-
 
 class _HudFrame extends PositionComponent with HasGameRef<CaveHuntGame> {
   @override
@@ -375,7 +370,6 @@ class _LivesHud extends PositionComponent with HasGameRef<CaveHuntGame> {
       final center = ui.Offset(dx + iconSize / 2, iconSize / 2);
       final bool isAlive = i < left;
 
-      // Ícone alternativo: escudo dourado (evita corte nas bordas)
       final ui.Path path = ui.Path();
       final double w = iconSize;
       final double h = iconSize;

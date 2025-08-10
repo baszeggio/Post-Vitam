@@ -1,6 +1,6 @@
 {
-    "name": "pou_application_1",
-    "short_name": "pou_application_1",
+    "name": "PostVitam",
+    "short_name": "PostVitam",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

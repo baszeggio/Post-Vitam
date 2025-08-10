@@ -53,7 +53,6 @@ class _InventoryPageState extends State<InventoryPage>
     super.dispose();
   }
 
-  // Formatar números de quantidade
   String _formatQuantity(int quantity) {
     if (quantity >= 1000) {
       double kValue = quantity / 1000.0;

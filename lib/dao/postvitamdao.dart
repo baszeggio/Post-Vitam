@@ -29,7 +29,7 @@ class DatabaseHelper {
   Future<Database> _initDB() async {
     try {
       final dbPath = await getDatabasesPath();
-      final path = join(dbPath, 'pet_status_v4.db'); // Novo nome do banco para reset e primeira execução
+      final path = join(dbPath, 'pet_status_v4.db'); 
       
       print('Inicializando banco de dados em: $path');
       
@@ -301,7 +301,7 @@ class DatabaseHelper {
       print('now: $now');
       print('Diferença em minutos: ${timeDifference.inMinutes}');
 
-      // Nova lógica: sempre diminui 10 pontos de cada status
+      // sempre diminui 10 pontos de cada status
       int newHunger = (currentStatus.hunger - 10).clamp(0, 100);
       int newHappiness = (currentStatus.happiness - 10).clamp(0, 100);
       int newEnergy = (currentStatus.energy - 10).clamp(0, 100);
@@ -337,7 +337,7 @@ class DatabaseHelper {
     }
   }
 
-  // Novo método: degradação proporcional ao tempo offline
+  // degradação proporcional ao tempo offline
   Future<PetStatus> calculateDegradationOffline() async {
     try {
       final currentStatus = await getPetStatus();
@@ -415,7 +415,7 @@ class DatabaseHelper {
       final now = DateTime.now();
       print('--- DEBUG DEGRADAÇÃO ONLINE ---');
       print('Status ANTES: ${currentStatus.toString()}');
-      // Agora diminui apenas 1 ponto de cada status
+      // diminui apenas 1 ponto de cada status
       int newHunger = (currentStatus.hunger - 1).clamp(0, 100);
       int newHappiness = (currentStatus.happiness - 1).clamp(0, 100);
       int newEnergy = (currentStatus.energy - 1).clamp(0, 100);

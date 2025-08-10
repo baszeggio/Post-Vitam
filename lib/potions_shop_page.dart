@@ -10,15 +10,14 @@ class ShopPage extends StatelessWidget {
     required this.currentCoins,
   });
 
-  // Formatar números de dinheiro (1000+ vira X.XK)
   String _formatPrice(int amount) {
     if (amount >= 1000) {
       double kValue = amount / 1000.0;
       if (kValue == kValue.toInt()) {
-        // Se for número inteiro (ex: 5000 -> 5K)
+
         return '${kValue.toInt()}K';
       } else {
-        // Se tiver decimais (ex: 1250 -> 1.25K)
+
         return '${kValue.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}K';
       }
     }
@@ -195,7 +194,7 @@ class ShopPage extends StatelessWidget {
                       padding: EdgeInsets.all(16),
                       child: Row(
                         children: [
-                          // Imagem do frasco
+                          
                           Container(
                             width: imageSize,
                             height: imageSize,
@@ -218,7 +217,7 @@ class ShopPage extends StatelessWidget {
                             ),
                           ),
                           SizedBox(width: 16),
-                          // Informações do frasco
+                          
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,7 +258,7 @@ class ShopPage extends StatelessWidget {
                               ],
                             ),
                           ),
-                          // Preço
+                          
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(

@@ -36,7 +36,7 @@ class NotificationService {
       
       // Configurações de inicialização para iOS
       const iosSettings = DarwinInitializationSettings(
-        requestAlertPermission: false, // Vamos solicitar depois
+        requestAlertPermission: false,
         requestBadgePermission: false,
         requestSoundPermission: false,
       );
@@ -50,7 +50,6 @@ class NotificationService {
       await _notifications.initialize(
         initSettings,
         onDidReceiveNotificationResponse: (details) {
-          // Aqui você pode adicionar lógica para quando o usuário toca na notificação
         },
       );
 
@@ -104,8 +103,6 @@ class NotificationService {
     required int delayInSeconds,
   }) async {
     try {
-      // Para sistemas de notificação simples, vamos usar apenas notificações imediatas
-      // ou implementar um timer para mostrar a notificação após o delay
       await Future.delayed(Duration(seconds: delayInSeconds > 10 ? 10 : delayInSeconds), () async {
         await showGameNotification(title: title, body: body);
       });

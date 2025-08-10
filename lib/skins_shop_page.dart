@@ -10,15 +10,14 @@ class SkinsShopPage extends StatelessWidget {
     required this.currentCoins,
   });
 
-  // Formatar números de dinheiro (1000+ vira X.XK)
   String _formatPrice(int amount) {
     if (amount >= 1000) {
       double kValue = amount / 1000.0;
       if (kValue == kValue.toInt()) {
-        // Se for número inteiro (ex: 5000 -> 5K)
+
         return '${kValue.toInt()}K';
       } else {
-        // Se tiver decimais (ex: 1250 -> 1.25K)
+
         return '${kValue.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '')}K';
       }
     }
@@ -51,11 +50,10 @@ class SkinsShopPage extends StatelessWidget {
       },
     ];
 
-    // Recebe o inventário de skins já compradas
+
     final List<Map<String, dynamic>>? inventorySkins = ModalRoute.of(context)?.settings.arguments as List<Map<String, dynamic>>?;
     final boughtNames = inventorySkins?.map((s) => s['name'] as String).toSet() ?? {};
     
-    // Filtra as skins que já foram compradas
     final availableSkins = skins.where((skin) => !boughtNames.contains(skin['name'])).toList();
 
     return Scaffold(
@@ -200,7 +198,7 @@ class SkinsShopPage extends StatelessWidget {
                                 duration: Duration(seconds: 2),
                               ),
                             );
-                            // Fechar a loja após a compra para atualizar a lista
+                            
                             Navigator.of(context).pop();
                           }
                         } else {
@@ -223,7 +221,7 @@ class SkinsShopPage extends StatelessWidget {
                         padding: EdgeInsets.all(16),
                         child: Row(
                           children: [
-                            // Imagem da skin
+                            
                             Container(
                               width: 60,
                               height: 60,
@@ -246,7 +244,7 @@ class SkinsShopPage extends StatelessWidget {
                               ),
                             ),
                             SizedBox(width: 16),
-                            // Informações da skin
+                           
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,7 +285,7 @@ class SkinsShopPage extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            // Preço
+                            
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(

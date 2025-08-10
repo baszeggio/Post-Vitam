@@ -48,3 +48,26 @@ android {
 flutter {
     source = "../.."
 }
+
+// Copia o APK gerado para um nome amigável (sem remover o original)
+// Ex.: build/app/outputs/flutter-apk/PostVitam-release.apk
+tasks.register<Copy>("copyReleaseApkAsPostVitam") {
+    from(layout.buildDirectory.file("outputs/apk/release/app-release.apk"))
+    into(layout.buildDirectory.dir("outputs/flutter-apk"))
+    rename { _ -> "PostVitam-release.apk" }
+    onlyIf { layout.buildDirectory.file("outputs/apk/release/app-release.apk").get().asFile.exists() }
+}
+
+// Também para debug
+tasks.register<Copy>("copyDebugApkAsPostVitam") {
+    from(layout.buildDirectory.file("outputs/apk/debug/app-debug.apk"))
+    into(layout.buildDirectory.dir("outputs/flutter-apk"))
+    rename { _ -> "PostVitam-debug.apk" }
+    onlyIf { layout.buildDirectory.file("outputs/apk/debug/app-debug.apk").get().asFile.exists() }
+}
+
+// Encadeia apenas após todas as tasks estarem criadas
+afterEvaluate {
+    tasks.findByName("assembleRelease")?.finalizedBy("copyReleaseApkAsPostVitam")
+    tasks.findByName("assembleDebug")?.finalizedBy("copyDebugApkAsPostVitam")
+}
