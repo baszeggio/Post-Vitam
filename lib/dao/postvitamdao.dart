@@ -12,7 +12,7 @@ class DatabaseHelper {
   DatabaseHelper._internal();
 
   static Database? _database;
-  static const int _databaseVersion = 3; // Incrementar versão para forçar recriação
+  static const int _databaseVersion = 4; // Incrementa versão para recriar com status máximos na primeira execução
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -29,7 +29,7 @@ class DatabaseHelper {
   Future<Database> _initDB() async {
     try {
       final dbPath = await getDatabasesPath();
-      final path = join(dbPath, 'pet_status_v3.db'); // Novo nome do banco
+      final path = join(dbPath, 'pet_status_v4.db'); // Novo nome do banco para reset e primeira execução
       
       print('Inicializando banco de dados em: $path');
       
@@ -84,13 +84,13 @@ class DatabaseHelper {
 
       print('Tabelas criadas com sucesso. Inserindo dados iniciais...');
       
-      // Dados iniciais do pet
+      // Dados iniciais do pet (primeira execução: status no máximo)
       await db.insert('pet_status', {
         'id': 1,
-        'hunger': 50,
-        'happiness': 50,
-        'energy': 50,
-        'vitality': 50,
+        'hunger': 100,
+        'happiness': 100,
+        'energy': 100,
+        'vitality': 100,
         'coins': 20000,
         'created_at': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
@@ -525,40 +525,42 @@ class DatabaseHelper {
   Future<void> saveInventory(List<Map<String, dynamic>> potions, List<Map<String, dynamic>> skins) async {
     try {
       final db = await database;
-      
-      // Limpar inventário atual
-      await db.delete('inventory');
-      
-      // Salvar poções (mantendo o tipo real: potion/faith/fervor)
-      for (var potion in potions) {
-        await db.insert('inventory', {
-          'item_type': potion['type'] ?? 'potion',
-          'item_name': potion['name'],
-          'item_img': potion['img'],
-          'item_img2': null,
-          'item_desc': potion['desc'],
-          'quantity': potion['quantity'],
-          'equipped': 0,
-          'created_at': DateTime.now().toIso8601String(),
-          'updated_at': DateTime.now().toIso8601String(),
-        });
-      }
-      
-      // Salvar skins
-      for (var skin in skins) {
-        await db.insert('inventory', {
-          'item_type': 'skin',
-          'item_name': skin['name'],
-          'item_img': skin['img'],
-          'item_img2': skin['img2'],
-          'item_desc': skin['desc'],
-          'quantity': skin['quantity'],
-          'equipped': skin['equipped'] ? 1 : 0,
-          'created_at': DateTime.now().toIso8601String(),
-          'updated_at': DateTime.now().toIso8601String(),
-        });
-      }
-      
+      await db.transaction((txn) async {
+        // Limpar inventário atual
+        await txn.delete('inventory');
+
+        final nowIso = DateTime.now().toIso8601String();
+
+        // Salvar poções (mantendo o tipo real: potion/faith/fervor)
+        for (var potion in potions) {
+          await txn.insert('inventory', {
+            'item_type': potion['type'] ?? 'potion',
+            'item_name': potion['name'],
+            'item_img': potion['img'],
+            'item_img2': null,
+            'item_desc': potion['desc'],
+            'quantity': potion['quantity'],
+            'equipped': 0,
+            'created_at': nowIso,
+            'updated_at': nowIso,
+          });
+        }
+
+        // Salvar skins
+        for (var skin in skins) {
+          await txn.insert('inventory', {
+            'item_type': 'skin',
+            'item_name': skin['name'],
+            'item_img': skin['img'],
+            'item_img2': skin['img2'],
+            'item_desc': skin['desc'],
+            'quantity': skin['quantity'],
+            'equipped': (skin['equipped'] == true) ? 1 : 0,
+            'created_at': nowIso,
+            'updated_at': nowIso,
+          });
+        }
+      });
       print('Inventário salvo com sucesso');
     } catch (e) {
       print('Erro ao salvar inventário: $e');
@@ -574,10 +576,10 @@ class DatabaseHelper {
     await db.update(
       'pet_status',
       {
-        'hunger': 50,
-        'happiness': 50,
-        'energy': 50,
-        'vitality': 50,
+        'hunger': 100,
+        'happiness': 100,
+        'energy': 100,
+        'vitality': 100,
         'coins': 20000,
         'updated_at': DateTime.now().toIso8601String(),
       },

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SkinsShopPage extends StatelessWidget {
-  final Function(Map<String, dynamic>) onBuySkin;
+  final Future<bool> Function(Map<String, dynamic>) onBuySkin;
   final int currentCoins;
   
   const SkinsShopPage({
@@ -183,24 +183,26 @@ class SkinsShopPage extends StatelessWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
-                      onTap: () {
+                      onTap: () async {
                         if (currentCoins >= (skin['price'] as int)) {
-                          onBuySkin(skin);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Você comprou ${skin['name']}!',
-                                style: TextStyle(
-                                  fontFamily: 'Pixel',
-                                  fontWeight: FontWeight.bold,
+                          final ok = await onBuySkin(skin);
+                          if (ok) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Você comprou ${skin['name']}!',
+                                  style: TextStyle(
+                                    fontFamily: 'Pixel',
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
+                                backgroundColor: Color(0xFFb29c48),
+                                duration: Duration(seconds: 2),
                               ),
-                              backgroundColor: Color(0xFFb29c48),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                          // Fechar a loja após a compra para atualizar a lista
-                          Navigator.of(context).pop();
+                            );
+                            // Fechar a loja após a compra para atualizar a lista
+                            Navigator.of(context).pop();
+                          }
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -299,12 +301,6 @@ class SkinsShopPage extends StatelessWidget {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Image.asset(
-                                    'assets/contador_moedas.png',
-                                    width: 24,
-                                    height: 24,
-                                  ),
-                                  SizedBox(width: 4),
                                   Text(
                                     _formatPrice(skin['price'] as int),
                                     style: TextStyle(
@@ -314,6 +310,8 @@ class SkinsShopPage extends StatelessWidget {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
+                                  SizedBox(width: 4),
+                                  Image.asset('assets/Icon_cifrao.png', width: 24, height: 24),
                                 ],
                               ),
                             ),

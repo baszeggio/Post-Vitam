@@ -91,9 +91,9 @@ class _InventoryPageState extends State<InventoryPage>
             children: [
               // Faixa decorativa atrás do texto
               Positioned(
-                top: 32,
-                left: 32,
-                right: 32,
+                top: 40,
+                left: 48,
+                right: 24,
                 child: Container(
                   height: 32,
                   decoration: BoxDecoration(
@@ -116,7 +116,7 @@ class _InventoryPageState extends State<InventoryPage>
               ),
               // Título estilizado
               Positioned(
-                top: 28,
+                top: 36,
                 child: Text(
                   'Inventário',
                   style: TextStyle(
@@ -175,7 +175,7 @@ class _InventoryPageState extends State<InventoryPage>
             child: Column(
               children: [
                 // Espaçamento superior
-                SizedBox(height: 20),
+                SizedBox(height: 12),
                 // Tabs
                 Container(
                   margin: EdgeInsets.symmetric(horizontal: 20),
@@ -197,12 +197,12 @@ class _InventoryPageState extends State<InventoryPage>
                     labelStyle: TextStyle(
                       fontFamily: 'Pixel',
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 18,
                     ),
                     unselectedLabelStyle: TextStyle(
                       fontFamily: 'Pixel',
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 18,
                     ),
                     tabs: [
                       Tab(text: 'Frascos'),
@@ -250,7 +250,7 @@ class _InventoryPageState extends State<InventoryPage>
             children: widget.potions.map((potion) {
               return Container(
                 width: itemWidth,
-                height: itemHeight,
+                height: itemHeight + 10,
                 margin: EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -308,8 +308,9 @@ class _InventoryPageState extends State<InventoryPage>
                       }
                     },
                     child: Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           // Imagem do frasco
                           Container(
@@ -359,6 +360,8 @@ class _InventoryPageState extends State<InventoryPage>
                                 SizedBox(height: 4),
                                 Text(
                                   potion['desc'] as String,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.8),
                                     fontFamily: 'Pixel',
@@ -458,7 +461,7 @@ class _InventoryPageState extends State<InventoryPage>
               
               return Container(
                 width: itemWidth,
-                height: itemHeight,
+                height: itemHeight + 10,
                 margin: EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -514,8 +517,9 @@ class _InventoryPageState extends State<InventoryPage>
                       }
                     },
                     child: Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           // Imagem da skin
                           Container(
@@ -577,6 +581,8 @@ class _InventoryPageState extends State<InventoryPage>
                                 SizedBox(height: 4),
                                 Text(
                                   skin['desc'] as String,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.8),
                                     fontFamily: 'Pixel',

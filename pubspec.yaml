@@ -94,12 +94,18 @@ flutter:
     - assets/Pano_2.png
     - assets/Pano_3.png
     - assets/Pano_4.png
-    
+    - assets/Icon_cifrao.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # Custom fonts
+  fonts:
+    - family: Pixel
+      fonts:
+        - asset: assets/fonts/blasphemous.otf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

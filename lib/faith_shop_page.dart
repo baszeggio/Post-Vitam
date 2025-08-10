@@ -273,12 +273,6 @@ class FaithShopPage extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Image.asset(
-                                  'assets/contador_moedas.png',
-                                  width: 16,
-                                  height: 16,
-                                ),
-                                SizedBox(width: 4),
                                 Text(
                                   _formatPrice(potion['price'] as int),
                                   style: TextStyle(
@@ -288,6 +282,8 @@ class FaithShopPage extends StatelessWidget {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                                SizedBox(width: 4),
+                                Image.asset('assets/Icon_cifrao.png', width: 16, height: 16),
                               ],
                             ),
                           ),

@@ -41,6 +41,14 @@ class MyApp extends StatelessWidget {
       scrollBehavior: const AppScrollBehavior(),
       title: 'Post Vitam',
       debugShowCheckedModeBanner: false,
+      builder: (context, child) {
+        final mq = MediaQuery.of(context);
+        // Aumenta levemente todas as fontes do app
+        return MediaQuery(
+          data: mq.copyWith(textScaleFactor: mq.textScaleFactor * 1.5),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         fontFamily: 'Pixel',
@@ -113,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage>
     if (hunger <= 20 && _canSendNotification('low_hunger')) {
       NotificationService.showGameNotification(
         title: 'Sua Fé está baixa!',
-        body: 'Seu Penitente precisa orar na Igreja para restaurar sua Fé.',
+        body: 'Seu Penitente precisa orar na Ecclesia para restaurar sua Fé.',
       );
       _markNotificationSent('low_hunger');
     }
@@ -121,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage>
     if (energy <= 20 && _canSendNotification('low_energy')) {
       NotificationService.showGameNotification(
         title: 'Seu Fervor está baixo!',
-        body: 'Seu Penitente precisa descansar nas Montanhas para recuperar o Fervor.',
+        body: 'Seu Penitente precisa descansar nos Montes para recuperar o Fervor.',
       );
       _markNotificationSent('low_energy');
     }
@@ -173,6 +181,8 @@ class _MyHomePageState extends State<MyHomePage>
   Future<void> _initializeApp() async {
     print('=== INICIANDO APLICATIVO ===');
     try {
+      // Primeira execução após a migração: garantimos status máximos persistidos pelo DAO
+      // Depois, continuamos com a lógica normal
       await _applyDegradationOnline();
       await _loadInventory();
       _startDegradationTimer();
@@ -335,7 +345,7 @@ class _MyHomePageState extends State<MyHomePage>
     return false;
   }
 
-  bool buySkin(Map<String, dynamic> skin) {
+  Future<bool> buySkin(Map<String, dynamic> skin) async {
     final price = skin['price'] as int;
     if (coins >= price) {
       setState(() {
@@ -356,8 +366,8 @@ class _MyHomePageState extends State<MyHomePage>
           });
         }
       });
-      _savePetStatus();
-      _saveInventory();
+      await _savePetStatus();
+      await _saveInventory();
       return true;
     }
     return false;
@@ -439,13 +449,13 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
       _isInForeground = false;
-      _savePetStatus();
-      _saveInventory();
+      await _savePetStatus();
+      await _saveInventory();
     } else if (state == AppLifecycleState.resumed) {
       _isInForeground = true;
       _applyStatusDegradation();
@@ -735,9 +745,11 @@ class _MyHomePageState extends State<MyHomePage>
         final isPortrait = screenHeight > screenWidth;
 
         final isVerySmallScreen = screenWidth < 400;
-        final characterWidth = isPortrait
+        // Aumento do tamanho do Penitente (~60% do base)
+        final baseCharacterWidth = isPortrait
             ? screenWidth * 0.4
             : screenHeight * 0.3;
+        final characterWidth = baseCharacterWidth * 1.6;
         final characterHeight = characterWidth * 1.8;
 
         final buttonWidth = screenWidth < 600 ? 120.0 : 160.0;
@@ -757,84 +769,25 @@ class _MyHomePageState extends State<MyHomePage>
                 ),
               ),
 
+              // Blocos de status alinhados em linha no canto superior esquerdo
               Positioned(
-                top: 20,
-                left: 0,
-                right: 0,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final screenWidth = constraints.maxWidth;
-                    final isSmallScreen = screenWidth < 600;
-                    final isVerySmallScreen = screenWidth < 400;
-
-                    return Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isSmallScreen ? 8 : 16,
-                      ),
-                      child: isVerySmallScreen
-                          ? Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    needIndicator(
-                                      iconPath: 'assets/Icon_fé.png',
-                                      value: hunger,
-                                    ),
-                                    needIndicator(
-                                      iconPath:
-                                          'assets/Icon_entretenimento.png',
-                                      value: happiness,
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 8),
-
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    needIndicator(
-                                      iconPath: 'assets/Icon_fervor.png',
-                                      value: energy,
-                                    ),
-                                    needIndicator(
-                                      iconPath: 'assets/Icon_vitalidade.png',
-                                      value: vitality,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                needIndicator(
-                                  iconPath: 'assets/Icon_fé.png',
-                                  value: hunger,
-                                ),
-                                needIndicator(
-                                  iconPath: 'assets/Icon_entretenimento.png',
-                                  value: happiness,
-                                ),
-                                needIndicator(
-                                  iconPath: 'assets/Icon_fervor.png',
-                                  value: energy,
-                                ),
-                                needIndicator(
-                                  iconPath: 'assets/Icon_vitalidade.png',
-                                  value: vitality,
-                                ),
-                              ],
-                            ),
-                    );
-                  },
+                top: screenHeight * 0.07,
+                left: 12,
+                child: Row(
+                  children: [
+                    needIndicator(iconPath: 'assets/Icon_fé.png', value: hunger),
+                    SizedBox(width: 8),
+                    needIndicator(iconPath: 'assets/Icon_entretenimento.png', value: happiness),
+                    SizedBox(width: 8),
+                    needIndicator(iconPath: 'assets/Icon_fervor.png', value: energy),
+                    SizedBox(width: 8),
+                    needIndicator(iconPath: 'assets/Icon_vitalidade.png', value: vitality),
+                  ],
                 ),
               ),
 
               Positioned(
-                top: screenHeight * 0.25,
+                top: screenHeight * 0.18,
                 left: 0,
                 right: 0,
                 child: LayoutBuilder(
@@ -915,7 +868,7 @@ class _MyHomePageState extends State<MyHomePage>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(height: screenHeight * 0.35),
+                    SizedBox(height: screenHeight * 0.38),
                     AnimatedBuilder(
                       animation: _penitenteAnimation,
                       builder: (context, child) {
@@ -949,81 +902,63 @@ class _MyHomePageState extends State<MyHomePage>
               Positioned(
                 left: screenWidth * 0.05,
                 bottom: screenHeight * 0.05,
-                child: _selectedIndex == 0
-                    ? Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.5),
-                              blurRadius: 4,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: IconButton(
-                          icon: Image.asset(
-                            'assets/Icon_confessar.png',
-                            width: screenWidth < 600 ? 48 : 64,
-                            height: screenWidth < 600 ? 48 : 64,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
                           ),
-                          onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => FaithShopPage(
-                                        currentCoins: coins,
-                                        onBuyPotion: buyFaithPotion,
-                                      ),
-                                    ),
-                                  );
-                                },
-
-                          tooltip: 'Orar',
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: Image.asset(
+                          _selectedIndex == 0
+                              ? 'assets/Icon_confessar.png' // Ecclesia
+                              : _selectedIndex == 1
+                                  ? 'assets/Icon_vaso_fervor.png' // Montes
+                                  : _selectedIndex == 2
+                                      ? 'assets/Frasco_0.png' // Albero
+                                      : 'assets/Icon_espada.png', // Spelunca
+                          width: screenWidth < 600 ? 48 : 64,
+                          height: screenWidth < 600 ? 48 : 64,
                         ),
-                      )
-                    : Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.5),
-                              blurRadius: 4,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: IconButton(
-                          icon: Image.asset(
-                            _selectedIndex == 3
-                                ? 'assets/Frasco_0.png'
-                                : _selectedIndex == 2
-                                ? 'assets/Icon_vaso_fervor.png'
-                                : 'assets/Icon_espada.png',
-                            width: screenWidth < 600 ? 48 : 64,
-                            height: screenWidth < 600 ? 48 : 64,
-                          ),
-                          onPressed: () {
-                            if (_selectedIndex == 3) {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => ShopPage(
-                                    onBuyPotion: buyPotion,
-                                    currentCoins: coins,
-                                  ),
+                        onPressed: () {
+                          if (_selectedIndex == 2) { // Albero
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => ShopPage(
+                                  onBuyPotion: buyPotion,
+                                  currentCoins: coins,
                                 ),
-                              );
-                                      } else if (_selectedIndex == 2) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => FervorShopPage(
-                  currentCoins: coins,
-                  onBuyPotion: buyFervorPotion,
-                ),
-              ),
-            );
-          } else {
-            Navigator.of(context).push(
-              MaterialPageRoute(
+                              ),
+                            );
+                          } else if (_selectedIndex == 1) { // Montes
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => FervorShopPage(
+                                  currentCoins: coins,
+                                  onBuyPotion: buyFervorPotion,
+                                ),
+                              ),
+                            );
+                          } else if (_selectedIndex == 0) { // Ecclesia
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => FaithShopPage(
+                                  currentCoins: coins,
+                                  onBuyPotion: buyFaithPotion,
+                                ),
+                              ),
+                            );
+                          } else {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
                 builder: (context) => GameWidget(
                   game: CaveHuntGame(
                     onFinish: (coinsEarned) {
@@ -1032,136 +967,272 @@ class _MyHomePageState extends State<MyHomePage>
                       });
                       _savePetStatus();
                     },
+                    onCoinCollected: () {
+                      setState(() {
+                        happiness = (happiness + 1).clamp(0, 100);
+                      });
+                      _savePetStatus();
+                    },
                   ),
-                  overlayBuilderMap: {
-                    'end': (ctx, game) {
-                      final g = game as CaveHuntGame;
-                      return AlertDialog(
-                        backgroundColor: const Color(0xFF2C1810),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Color(0xFFb29c48), width: 2),
-                        ),
-                        title: const Text(
-                          'Fim da Caça',
-                          style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel'),
-                        ),
+                                  overlayBuilderMap: {
+                                    'end': (ctx, game) {
+                                      final g = game as CaveHuntGame;
+                                      return AlertDialog(
+                                        backgroundColor: const Color(0xFF2C1810),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          side: const BorderSide(color: Color(0xFFb29c48), width: 2),
+                                        ),
+                                        title: const Text(
+                                          'Fim da Caça',
+                                          style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel'),
+                                        ),
                         content: Text(
-                          'Você ganhou ${g.score * 5} moedas.',
-                          style: const TextStyle(color: Colors.white, fontFamily: 'Pixel'),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(ctx).pop(),
-                            child: const Text('OK', style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel')),
-                          ),
-                        ],
-                      );
-                    },
-                    'hud': (ctx, game) {
-                      final g = game as CaveHuntGame;
-                      return SafeArea(
-                        child: Align(
-                          alignment: Alignment.topRight,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2C1810),
-                                foregroundColor: const Color(0xFFb29c48),
+                          'Você ganhou ${g.score * 30} moedas.\nEntretenimento +${g.score}',
+                                          style: const TextStyle(color: Colors.white, fontFamily: 'Pixel'),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.of(ctx).pop(),
+                                            child: const Text('OK', style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel')),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                    'hud': (ctx, game) {
+                                      final g = game as CaveHuntGame;
+                                      return SafeArea(
+                                        child: Align(
+                                          alignment: Alignment.topRight,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: ElevatedButton.icon(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: const Color(0xFF2C1810),
+                                                foregroundColor: const Color(0xFFb29c48),
+                                              ),
+                                              onPressed: () {
+                                                g.pauseEngine();
+                                                showDialog(
+                                                  context: ctx,
+                                                  builder: (c) => AlertDialog(
+                                                    backgroundColor: const Color(0xFF2C1810),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(12),
+                                                      side: const BorderSide(color: Color(0xFFb29c48), width: 2),
+                                                    ),
+                                                    title: const Text(
+                                                      'Sair do jogo',
+                                                      style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel'),
+                                                    ),
+                                                    content: const Text(
+                                                      'Tem certeza que deseja sair? Seu progresso nesta rodada não será contado.',
+                                                      style: TextStyle(color: Colors.white, fontFamily: 'Pixel'),
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.of(c).pop();
+                                                          g.resumeEngine();
+                                                        },
+                                                        child: const Text('Continuar', style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel')),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.of(c).pop();
+                                                          Navigator.of(ctx).pop();
+                                                        },
+                                                        child: const Text('Sair', style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel')),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                              icon: const Icon(Icons.exit_to_app),
+                                              label: const Text('Sair', style: TextStyle(fontFamily: 'Pixel')),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  },
+                                  initialActiveOverlays: const ['hud'],
+                                ),
                               ),
-                              onPressed: () {
-                                g.pauseEngine();
-                                showDialog(
-                                  context: ctx,
-                                  builder: (c) => AlertDialog(
-                                    backgroundColor: const Color(0xFF2C1810),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      side: const BorderSide(color: Color(0xFFb29c48), width: 2),
-                                    ),
-                                    title: const Text(
-                                      'Sair do jogo',
-                                      style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel'),
-                                    ),
-                                    content: const Text(
-                                      'Tem certeza que deseja sair? Seu progresso nesta rodada não será contado.',
-                                      style: TextStyle(color: Colors.white, fontFamily: 'Pixel'),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(c).pop();
-                                          g.resumeEngine();
-                                        },
-                                        child: const Text('Continuar', style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel')),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(c).pop();
-                                          Navigator.of(ctx).pop();
-                                        },
-                                        child: const Text('Sair', style: TextStyle(color: Color(0xFFb29c48), fontFamily: 'Pixel')),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.exit_to_app),
-                              label: const Text('Sair', style: TextStyle(fontFamily: 'Pixel')),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  },
-                  initialActiveOverlays: const ['hud'],
+                            );
+                          }
+                        },
+                        tooltip: _selectedIndex == 2
+                            ? 'Loja de Frascos'
+                            : _selectedIndex == 1
+                                ? 'Descansar'
+                                : _selectedIndex == 0
+                                    ? 'Orar'
+                                    : 'Espada',
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _selectedIndex == 0
+                          ? 'Absolvo'
+                          : _selectedIndex == 1
+                              ? 'Fervor'
+                              : _selectedIndex == 2
+                                  ? 'Vitale'
+                                  : 'Laminate',
+                      style: TextStyle(
+                        color: const Color(0xFFb29c48),
+                        fontFamily: 'Pixel',
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth < 600 ? 14 : 16,
+                        shadows: const [
+                          Shadow(color: Colors.black, blurRadius: 2, offset: Offset(1, 1)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            );
-          }
+
+              // Inventário centralizado embaixo, entre os botões de lojas
+              Positioned(
+                bottom: screenHeight * 0.05,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Color(0xFFb29c48), width: 1),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.inventory, color: Color(0xFFb29c48)),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => InventoryPage(
+                                  potions: inventoryPotions,
+                                  skins: inventorySkins,
+                                  onUsePotion: usePotion,
+                                  onEquipSkin: equipSkin,
+                                  onUpdate: updateInventory,
+                                ),
+                              ),
+                            );
                           },
-                          tooltip: _selectedIndex == 3
-                              ? 'Loja de Frascos'
-                              : _selectedIndex == 2
-                              ? 'Descansar'
-                              : 'Espada',
+                          tooltip: 'Inventário',
                         ),
                       ),
-              ),
-
-              Positioned(
-                right: screenWidth * 0.05,
-                bottom: screenHeight * 0.05,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Inventário',
+                        style: TextStyle(
+                          color: Color(0xFFb29c48),
+                          fontFamily: 'Pixel',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          shadows: [
+                            Shadow(color: Colors.black, blurRadius: 2, offset: Offset(1, 1)),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  child: IconButton(
-                    icon: Image.asset(
-                      'assets/Icon_loja.png',
-                      width: screenWidth < 600 ? 48 : 64,
-                      height: screenWidth < 600 ? 48 : 64,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => SkinsShopPage(
-                            onBuySkin: buySkin,
-                            currentCoins: coins,
+                ),
+              ),
+
+              // Dinheiro no topo direito
+              Positioned(
+                top: screenHeight * 0.07,
+                right: screenWidth * 0.05,
+                child: Container(
+                  width: 110,
+                  height: 60,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/contador_moedas.png',
+                        width: 110,
+                        height: 60,
+                        fit: BoxFit.contain,
+                      ),
+                      Positioned(
+                        left: 28,
+                        top: 18,
+                        child: Text(
+                          _formatMoney(coins),
+                          style: const TextStyle(
+                            color: Color(0xFFb29c48),
+                            fontSize: 18,
+                            fontFamily: 'Pixel',
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(color: Colors.black, blurRadius: 2, offset: Offset(1, 1)),
+                            ],
                           ),
-                          settings: RouteSettings(arguments: inventorySkins),
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
+                ),
+              ),
+
+              // Loja de Skins (Nundinae) no canto inferior direito
+              Positioned(
+                right: screenWidth * 0.05,
+                bottom: screenHeight * 0.05,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: Image.asset(
+                          'assets/Icon_loja.png',
+                          width: screenWidth < 600 ? 48 : 64,
+                          height: screenWidth < 600 ? 48 : 64,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => SkinsShopPage(
+                                onBuySkin: buySkin,
+                                currentCoins: coins,
+                              ),
+                              settings: RouteSettings(arguments: inventorySkins),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Nundinae',
+                      style: TextStyle(
+                        color: const Color(0xFFb29c48),
+                        fontFamily: 'Pixel',
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth < 600 ? 14 : 16,
+                        shadows: const [
+                          Shadow(color: Colors.black, blurRadius: 2, offset: Offset(1, 1)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -1172,25 +1243,29 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   List<Widget> get _pages => [
+    // Ecclesia (Igreja)
     _buildResponsivePage(
       backgroundAsset: 'assets/background_igr.png',
       buttonText: '',
       onPressed: feed,
     ),
-    _buildResponsivePage(
-      backgroundAsset: 'assets/background_cav.png',
-      buttonText: '',
-      onPressed: play,
-    ),
+    // Montes (Montanhas)
     _buildResponsivePage(
       backgroundAsset: 'assets/background_mon.png',
       buttonText: '',
       onPressed: sleep,
     ),
+    // Albero
     _buildResponsivePage(
       backgroundAsset: 'assets/background_alb.png',
       buttonText: '',
       onPressed: increaseVitality,
+    ),
+    // Spelunca (Caverna) - por último
+    _buildResponsivePage(
+      backgroundAsset: 'assets/background_cav.png',
+      buttonText: '',
+      onPressed: play,
     ),
   ];
 
@@ -1208,144 +1283,7 @@ class _MyHomePageState extends State<MyHomePage>
     }
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(0xFF2C1810),
-        elevation: 0,
-        leading: null,
-        title: LayoutBuilder(
-          builder: (context, constraints) {
-            final screenWidth = constraints.maxWidth;
-            final isSmallScreen = screenWidth < 600;
-            return Container(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    _getPageTitle(_selectedIndex),
-                    style: TextStyle(
-                      color: Color(0xFFb29c48),
-                      fontFamily: 'Pixel',
-                      fontWeight: FontWeight.bold,
-                      fontSize: isSmallScreen ? 16 : 22,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Color(0xFFb29c48),
-                            width: 1,
-                          ),
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.inventory,
-                            color: Color(0xFFb29c48),
-                            size: isSmallScreen ? 20 : 24,
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => InventoryPage(
-                                  potions: inventoryPotions,
-                                  skins: inventorySkins,
-                                  onUsePotion: usePotion,
-                                  onEquipSkin: equipSkin,
-                                  onUpdate: updateInventory,
-                                ),
-                              ),
-                            );
-                          },
-                          tooltip: 'Inventário',
-                        ),
-                      ),
-                      SizedBox(width: 8),
-
-                      Container(
-                        width: isSmallScreen ? 80 : 100,
-                        height: isSmallScreen ? 48 : 60,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Image.asset(
-                              'assets/contador_moedas.png',
-                              width: isSmallScreen ? 80 : 100,
-                              height: isSmallScreen ? 48 : 60,
-                              fit: BoxFit.contain,
-                            ),
-                            Positioned(
-                              left: isSmallScreen ? 20 : 25,
-                              top: isSmallScreen ? 15 : 20,
-                              child: Text(
-                                _formatMoney(coins),
-                                style: TextStyle(
-                                  color: Color(0xFFb29c48),
-                                  fontSize: isSmallScreen ? 14 : 18,
-                                  fontFamily: 'Pixel',
-                                  fontWeight: FontWeight.bold,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black,
-                                      blurRadius: 2,
-                                      offset: Offset(1, 1),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: 8),
-
-                      IconButton(
-                        icon: Icon(Icons.refresh, color: Color(0xFFb29c48)),
-                        tooltip: 'Resetar progresso',
-                        onPressed: () async {
-                          await _dbHelper.resetDatabase();
-
-                          setState(() {
-                            hunger = 50;
-                            happiness = 50;
-                            energy = 50;
-                            vitality = 50;
-                            coins = 20000;
-                            inventoryPotions.clear();
-                            inventorySkins = [
-                              {
-                                'img': 'assets/Penitente_1.png',
-                                'img2': 'assets/Penitente_2.png',
-                                'name': 'Skin Padrão',
-                                'desc': 'O visual padrão do Penitente.',
-                                'quantity': 1,
-                                'type': 'skin',
-                                'equipped': true,
-                              },
-                            ];
-                          });
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Progresso resetado!'),
-                                backgroundColor: Color(0xFFb29c48),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
+      appBar: null,
       body: Container(
         color: Color(0xFF2C1810),
         child: PageView.builder(
@@ -1400,13 +1338,13 @@ class _MyHomePageState extends State<MyHomePage>
   String _getPageTitle(int index) {
     switch (index) {
       case 0:
-        return 'Igreja';
+        return 'Ecclesia';
       case 1:
-        return 'Caverna';
+        return 'Montes';
       case 2:
-        return 'Montanhas';
-      case 3:
         return 'Albero';
+      case 3:
+        return 'Spelunca';
       default:
         return '';
     }

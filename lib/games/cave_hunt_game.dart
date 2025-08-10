@@ -9,13 +9,15 @@ import 'package:flutter/material.dart';
 
 /// Minigame da Caverna: bolinhas caem do topo e você deve tocar nelas
 /// antes que atinjam o chão. Cada bola coletada vale 1 ponto. A
-/// recompensa final é calculada externamente como score * 5.
+/// recompensa final é calculada externamente como score * 30.
 class CaveHuntGame extends FlameGame with TapDetector {
-  CaveHuntGame({required this.onFinish});
+  CaveHuntGame({required this.onFinish, this.onCoinCollected});
 
   /// Callback disparado ao fim do jogo, informando as moedas ganhas
-  /// (normalmente score * 5).
+  /// (normalmente score * 30).
   final void Function(int coinsEarned) onFinish;
+  /// Callback por moeda coletada (para aumentar entretenimento no app)
+  final VoidCallback? onCoinCollected;
 
   /// Pontuação do jogador (número de moedas coletadas)
   int score = 0;
@@ -67,16 +69,10 @@ class CaveHuntGame extends FlameGame with TapDetector {
     add(_VignetteOverlay()
       ..priority = -10);
 
-    // HUD: placar e vidas
-    add(_HudFrame()
-      ..position = Vector2(6, 6)
+    // HUD agrupado: moldura dinâmica envolvendo placar + vidas
+    add(_HudGroup(this)
+      ..position = Vector2(8, 40)
       ..priority = 9);
-    add(_ScoreText(this)
-      ..position = Vector2(14, 10)
-      ..priority = 10);
-    add(_LivesHud(this)
-      ..position = Vector2(14, 34)
-      ..priority = 10);
 
     // Timer de spawn de moedas
     _spawnTimer = Timer(0.8, repeat: true, onTick: _spawnCoin);
@@ -111,7 +107,7 @@ class CaveHuntGame extends FlameGame with TapDetector {
 
     // Spawna no topo, em X aleatório, ligeiramente abaixo do HUD
     final double x = _random.nextDouble() * (bounds.x - margin * 2) + margin;
-    final double y = 60 + margin; // área reservada ao HUD
+    final double y = 140 + margin; // área reservada ao HUD (HUD mais baixo)
 
     // Velocidade vertical aleatória (px/s)
     final double speedY = 120 + _random.nextDouble() * 160; // 120-280 px/s
@@ -126,6 +122,7 @@ class CaveHuntGame extends FlameGame with TapDetector {
     if (_isFinished) return;
     score += 1;
     coin.removeFromParent();
+    onCoinCollected?.call();
   }
 
   void _onMissed() {
@@ -139,7 +136,7 @@ class CaveHuntGame extends FlameGame with TapDetector {
     if (_isFinished) return;
     _isFinished = true;
     // Calcula recompensa (mesma regra exibida no overlay em main.dart)
-    final int coinsEarned = score * 5;
+    final int coinsEarned = score * 30;
 
     // Pausa e mostra overlay de fim (mapeado no GameWidget em main.dart)
     pauseEngine();
@@ -252,7 +249,7 @@ class _ScoreText extends TextComponent with HasGameRef<CaveHuntGame> {
               style: const TextStyle(
                 color: Color(0xFFb29c48),
                 fontFamily: 'Pixel',
-                fontSize: 16,
+                fontSize: 20,
                 shadows: [
                   Shadow(color: Colors.black, blurRadius: 2, offset: Offset(1, 1)),
                 ],
@@ -275,7 +272,7 @@ class _HudFrame extends PositionComponent with HasGameRef<CaveHuntGame> {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    size = Vector2(220, 56);
+    size = Vector2(260, 72);
     anchor = Anchor.topLeft;
   }
 
@@ -298,6 +295,41 @@ class _HudFrame extends PositionComponent with HasGameRef<CaveHuntGame> {
       RRect.fromRectAndRadius(rect, const Radius.circular(8)),
       border,
     );
+  }
+}
+
+class _HudGroup extends PositionComponent with HasGameRef<CaveHuntGame> {
+  _HudGroup(this._game);
+
+  final CaveHuntGame _game;
+
+  late final _ScoreText _scoreText;
+  late final _LivesHud _livesHud;
+  late final _HudFrame _frame;
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+
+    _scoreText = _ScoreText(_game)
+      ..position = Vector2(12, 8)
+      ..priority = 10;
+    _livesHud = _LivesHud(_game)
+      ..position = Vector2(12, 32)
+      ..priority = 10;
+
+    add(_scoreText);
+    add(_livesHud);
+
+    // Calcula largura baseada em expectativas (score até 3 dígitos + label) e largura fixa para vidas
+    const double estimatedScoreWidth = 160; // margem segura
+    const double livesWidth = 200;
+    final double contentWidth = (estimatedScoreWidth > livesWidth ? estimatedScoreWidth : livesWidth) + 16;
+
+    _frame = _HudFrame()
+      ..size = Vector2(contentWidth, 64)
+      ..priority = 9;
+    add(_frame);
   }
 }
 
@@ -325,18 +357,12 @@ class _LivesHud extends PositionComponent with HasGameRef<CaveHuntGame> {
 
   final CaveHuntGame _game;
 
-  static const double iconSize = 14;
-  static final ui.Paint _aliveFill = ui.Paint()..color = const Color(0xFFb29c48);
-  static final ui.Paint _lostFill = ui.Paint()..color = const Color(0xFF5a4b1f);
-  static final ui.Paint _border = ui.Paint()
-    ..color = const Color(0xFF8a6f2a)
-    ..style = ui.PaintingStyle.stroke
-    ..strokeWidth = 2;
+  static const double iconSize = 18;
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    size = Vector2(180, iconSize + 4);
+    size = Vector2(200, iconSize + 4);
   }
 
   @override
@@ -345,18 +371,44 @@ class _LivesHud extends PositionComponent with HasGameRef<CaveHuntGame> {
     const int total = 3;
     final int left = _game.livesLeft.clamp(0, total);
     for (int i = 0; i < total; i++) {
-      final dx = i * (iconSize + 8);
+      final dx = i * (iconSize + 10);
       final center = ui.Offset(dx + iconSize / 2, iconSize / 2);
-      final paint = i < left ? _aliveFill : _lostFill;
-      // Desenho estilizado: gota/caveira simplificada
-      canvas.drawCircle(center, iconSize / 2, paint);
-      canvas.drawCircle(center, iconSize / 2, _border);
-      // Olhinhos escuros quando vida ativa (leve referência gótica)
-      if (i < left) {
-        final eyePaint = ui.Paint()..color = const Color(0xFF2C1810);
-        canvas.drawCircle(center.translate(-3, -1), 1.5, eyePaint);
-        canvas.drawCircle(center.translate(3, -1), 1.5, eyePaint);
-      }
+      final bool isAlive = i < left;
+
+      // Ícone alternativo: escudo dourado (evita corte nas bordas)
+      final ui.Path path = ui.Path();
+      final double w = iconSize;
+      final double h = iconSize;
+      path.moveTo(center.dx, center.dy - h * 0.5);
+      path.lineTo(center.dx + w * 0.5, center.dy - h * 0.15);
+      path.lineTo(center.dx, center.dy + h * 0.55);
+      path.lineTo(center.dx - w * 0.5, center.dy - h * 0.15);
+      path.close();
+
+      final ui.Paint fill = ui.Paint()
+        ..shader = ui.Gradient.linear(
+          ui.Offset(center.dx, center.dy - h * 0.5),
+          ui.Offset(center.dx, center.dy + h * 0.55),
+          isAlive
+              ? const [Color(0xFFffe08a), Color(0xFFd4af37)]
+              : const [Color(0xFF5a4b1f), Color(0xFF3b3116)],
+        );
+      final ui.Paint border = ui.Paint()
+        ..color = const Color(0xFF8a6f2a)
+        ..style = ui.PaintingStyle.stroke
+        ..strokeWidth = 2;
+
+      // Sombra leve para destacar
+      final ui.Paint shadow = ui.Paint()
+        ..color = Colors.black.withOpacity(0.4)
+        ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 3);
+      canvas.save();
+      canvas.translate(2, 2);
+      canvas.drawPath(path, shadow);
+      canvas.restore();
+
+      canvas.drawPath(path, fill);
+      canvas.drawPath(path, border);
     }
   }
 }
