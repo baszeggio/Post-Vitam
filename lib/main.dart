@@ -1272,11 +1272,91 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF2C1810),
+      return Scaffold(
+        backgroundColor: const Color(0xFF2C1810),
         body: Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFb29c48)),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final screenWidth = constraints.maxWidth;
+              final double titleFontSize = (screenWidth * 0.16).clamp(42.0, 96.0);
+              final double outlineWidth = (screenWidth * 0.008).clamp(2.0, 6.0);
+              final double glowBlur = (screenWidth * 0.03).clamp(6.0, 22.0);
+
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Halo suave dourado por trás do texto
+                      Text(
+                        'post vitam.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'BadBoys',
+                          fontSize: titleFontSize,
+                          color: const Color(0xFFb29c48),
+                          shadows: [
+                            Shadow(
+                              color: const Color(0xFFb29c48).withOpacity(0.55),
+                              blurRadius: glowBlur,
+                              offset: const Offset(0, 0),
+                            ),
+                            Shadow(
+                              color: const Color(0xFFb29c48).withOpacity(0.35),
+                              blurRadius: glowBlur * 0.6,
+                              offset: const Offset(0, 0),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Contorno preto
+                      Text(
+                        'post vitam.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'BadBoys',
+                          fontSize: titleFontSize,
+                          foreground: Paint()
+                            ..style = PaintingStyle.stroke
+                            ..strokeWidth = outlineWidth
+                            ..color = Colors.black,
+                        ),
+                      ),
+                      // Preenchimento em degradê dourado
+                      ShaderMask(
+                        blendMode: BlendMode.srcIn,
+                        shaderCallback: (Rect bounds) {
+                          return const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Color(0xFFF7E27E), // topo claro
+                              Color(0xFFE6CC77),
+                              Color(0xFFb29c48), // dourado clássico do app
+                              Color(0xFF8C6F1D), // base mais escura
+                            ],
+                          ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
+                        },
+                        child: Text(
+                          'post vitam.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'BadBoys',
+                            fontSize: titleFontSize,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFb29c48)),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       );
