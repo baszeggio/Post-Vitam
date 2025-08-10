@@ -1157,7 +1157,7 @@ class _MyHomePageState extends State<MyHomePage>
                       ),
                       Positioned(
                         left: 28,
-                        top: 18,
+                        top: 14,
                         child: Text(
                           _formatMoney(coins),
                           style: const TextStyle(

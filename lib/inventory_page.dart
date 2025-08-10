@@ -88,56 +88,82 @@ class _InventoryPageState extends State<InventoryPage>
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Faixa decorativa atrás do texto
+              // Título estilizado com linhas decorativas (estética Blasphemous)
               Positioned(
                 top: 40,
                 left: 48,
                 right: 24,
-                child: Container(
-                  height: 32,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF4A2C1A), Color(0xFF2C1810)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        height: 2,
+                        color: const Color(0xFFb29c48),
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Color(0xFFb29c48), width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+                    Text(
+                      '◆',
+                      style: TextStyle(
+                        color: const Color(0xFFb29c48),
+                        fontSize: 14,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.8),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              // Título estilizado
-              Positioned(
-                top: 36,
-                child: Text(
-                  'Inventário',
-                  style: TextStyle(
-                    color: Color(0xFFb29c48),
-                    fontFamily: 'Pixel',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 28,
-                    letterSpacing: 2,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.8),
-                        blurRadius: 6,
-                        offset: Offset(0, 3),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Inventário',
+                      style: TextStyle(
+                        color: const Color(0xFFb29c48),
+                        fontFamily: 'Pixel',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 26,
+                        letterSpacing: 2,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.8),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '◆',
+                      style: TextStyle(
+                        color: const Color(0xFFb29c48),
+                        fontSize: 14,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.8),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        height: 2,
+                        color: const Color(0xFFb29c48),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               // Botão de voltar
               Positioned(
                 left: 8,
-                top: 28,
+                top: 36,
                 child: IconButton(
                   icon: const Icon(
                     Icons.arrow_back,
@@ -175,21 +201,37 @@ class _InventoryPageState extends State<InventoryPage>
               children: [
                 // Espaçamento superior
                 SizedBox(height: 12),
-                // Tabs
-                Container(
+                 // Moldura temática para as abas (estética Blasphemous)
+                 Container(
                   margin: EdgeInsets.symmetric(horizontal: 20),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Color(0xFFb29c48), width: 2),
+                     color: Colors.black.withOpacity(0.65),
+                     borderRadius: BorderRadius.circular(12),
+                     border: Border.all(color: Color(0xFFb29c48), width: 2),
+                     boxShadow: [
+                       BoxShadow(
+                         color: Colors.black.withOpacity(0.8),
+                         blurRadius: 10,
+                         offset: Offset(0, 6),
+                       ),
+                     ],
                   ),
                   child: TabBar(
                     controller: _tabController,
                     indicator: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFFb29c48), Color(0xFFb29c48).withOpacity(0.8)],
-                      ),
-                      borderRadius: BorderRadius.circular(10),
+                       gradient: LinearGradient(
+                         colors: [Color(0xFFD9C77A), Color(0xFFb29c48)],
+                         begin: Alignment.topLeft,
+                         end: Alignment.bottomRight,
+                       ),
+                       borderRadius: BorderRadius.circular(10),
+                       boxShadow: [
+                         BoxShadow(
+                           color: Colors.black.withOpacity(0.6),
+                           blurRadius: 8,
+                           offset: Offset(0, 4),
+                         ),
+                       ],
                     ),
                     labelColor: Colors.black,
                     unselectedLabelColor: Color(0xFFb29c48),
@@ -211,15 +253,30 @@ class _InventoryPageState extends State<InventoryPage>
                 ),
                 SizedBox(height: 20),
                 // Conteúdo das tabs
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildPotionsTab(),
-                      _buildSkinsTab(),
-                    ],
-                  ),
-                ),
+                 Expanded(
+                   child: Container(
+                     margin: EdgeInsets.symmetric(horizontal: 12),
+                     decoration: BoxDecoration(
+                       color: Colors.black.withOpacity(0.5),
+                       borderRadius: BorderRadius.circular(12),
+                       border: Border.all(color: Color(0xFFb29c48).withOpacity(0.7), width: 1),
+                       boxShadow: [
+                         BoxShadow(
+                           color: Colors.black.withOpacity(0.6),
+                           blurRadius: 12,
+                           offset: Offset(0, 6),
+                         ),
+                       ],
+                     ),
+                     child: TabBarView(
+                       controller: _tabController,
+                       children: [
+                         _buildPotionsTab(),
+                         _buildSkinsTab(),
+                       ],
+                     ),
+                   ),
+                 ),
               ],
             ),
           ),

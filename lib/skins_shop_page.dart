@@ -24,6 +24,8 @@ class SkinsShopPage extends StatelessWidget {
     return amount.toString();
   }
 
+  
+
   @override
   Widget build(BuildContext context) {
     final skins = [
@@ -85,12 +87,6 @@ class SkinsShopPage extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Image.asset(
-                    'assets/contador_moedas.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  SizedBox(width: 8),
                   Text(
                     _formatPrice(currentCoins),
                     style: TextStyle(
@@ -98,6 +94,12 @@ class SkinsShopPage extends StatelessWidget {
                       fontFamily: 'Pixel',
                       fontSize: 14,
                     ),
+                  ),
+                  SizedBox(width: 8),
+                  Image.asset(
+                    'assets/Icon_cifrao.png',
+                    width: 20,
+                    height: 20,
                   ),
                 ],
               ),
@@ -182,7 +184,8 @@ class SkinsShopPage extends StatelessWidget {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: () async {
-                        if (currentCoins >= (skin['price'] as int)) {
+                        final int itemPrice = skin['price'] as int;
+                        if (currentCoins >= itemPrice) {
                           final ok = await onBuySkin(skin);
                           if (ok) {
                             ScaffoldMessenger.of(context).showSnackBar(

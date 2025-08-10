@@ -25,6 +25,8 @@ class FaithShopPage extends StatelessWidget {
     return amount.toString();
   }
 
+  
+
   @override
   Widget build(BuildContext context) {
     final potions = [
@@ -83,12 +85,6 @@ class FaithShopPage extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Image.asset(
-                    'assets/contador_moedas.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  SizedBox(width: 8),
                   Text(
                     _formatPrice(currentCoins),
                     style: TextStyle(
@@ -96,6 +92,12 @@ class FaithShopPage extends StatelessWidget {
                       fontFamily: 'Pixel',
                       fontSize: 14,
                     ),
+                  ),
+                  SizedBox(width: 8),
+                  Image.asset(
+                    'assets/Icon_cifrao.png',
+                    width: 20,
+                    height: 20,
                   ),
                 ],
               ),
