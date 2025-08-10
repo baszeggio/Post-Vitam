@@ -63,6 +63,10 @@ class SkinsShopPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Color(0xFF2C1810),
         elevation: 0,
+        iconTheme: const IconThemeData(
+          color: Color(0xFFb29c48),
+          size: 28,
+        ),
         title: Row(
           children: [
             Text(
