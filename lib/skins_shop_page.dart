@@ -88,7 +88,7 @@ class SkinsShopPage extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Text(
+                   Text(
                     _formatPrice(currentCoins),
                     style: TextStyle(
                       color: Color(0xFFb29c48),
