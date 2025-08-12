@@ -67,7 +67,7 @@ class FervorShopPage extends StatelessWidget {
         title: Row(
           children: [
             Text(
-              'Ordem dos Panos',
+              'Beijos Fervorosos',
               style: TextStyle(
                 color: Color(0xFFb29c48),
                 fontFamily: 'Pixel',
@@ -225,6 +225,8 @@ class FervorShopPage extends StatelessWidget {
                               children: [
                                 Text(
                                   potion['name'] as String,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: Color(0xFFb29c48),
                                     fontFamily: 'Pixel',
@@ -242,6 +244,8 @@ class FervorShopPage extends StatelessWidget {
                                 SizedBox(height: 4),
                                 Text(
                                   potion['desc'] as String,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.8),
                                     fontFamily: 'Pixel',

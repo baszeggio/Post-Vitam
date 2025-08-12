@@ -256,6 +256,8 @@ class SkinsShopPage extends StatelessWidget {
                                 children: [
                                   Text(
                                     skin['name'] as String,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color: Color(0xFFb29c48),
                                       fontFamily: 'Pixel',
@@ -273,6 +275,8 @@ class SkinsShopPage extends StatelessWidget {
                                   SizedBox(height: 4),
                                   Text(
                                     skin['desc'] as String,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color: Colors.white.withOpacity(0.8),
                                       fontFamily: 'Pixel',

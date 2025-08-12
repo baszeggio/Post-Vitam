@@ -5,9 +5,9 @@ Um pet game com estética retrô e inspiração gótica. Cuide do seu Penitente 
 ### Funcionalidades
 - **Status do Pet**: Fé, Entretenimento, Fervor e Vitalidade com degradação automática ao longo do tempo.
 - **Lojas temáticas**:
-  - Ordem das Chagas (Fé)
-  - Ordem dos Panos (Fervor)
-  - Loja de Frascos (Vitalidade)
+  - Santas Chagas (Fé)
+  - Beijos Fervorosos (Fervor)
+  - Alambique Sagrado (Vitalidade)
   - Nundinae (Skins)
 - **Inventário**: gerencie consumíveis e skins, equipe/descarte itens e acompanhe quantidades.
 - **Minigame Spelunca**: toque nas moedas que caem para pontuar e ganhar moedas (Flame Engine).

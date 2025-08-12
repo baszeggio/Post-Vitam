@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:pou_application_1/faith_shop_page.dart';
 import 'package:pou_application_1/fervor_shop_page.dart';
@@ -43,9 +44,14 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         final mq = MediaQuery.of(context);
-
+        final bool isDesktop = !kIsWeb && (
+          defaultTargetPlatform == TargetPlatform.windows ||
+          defaultTargetPlatform == TargetPlatform.linux ||
+          defaultTargetPlatform == TargetPlatform.macOS
+        );
+        final double targetScale = isDesktop ? mq.textScaleFactor : (mq.textScaleFactor * 1.5);
         return MediaQuery(
-          data: mq.copyWith(textScaleFactor: mq.textScaleFactor * 1.5),
+          data: mq.copyWith(textScaleFactor: targetScale.clamp(1.0, 1.5)),
           child: child ?? const SizedBox.shrink(),
         );
       },
@@ -1059,7 +1065,7 @@ class _MyHomePageState extends State<MyHomePage>
                           }
                         },
                         tooltip: _selectedIndex == 2
-                            ? 'Loja de Frascos'
+                            ? 'Alambique Sagrado'
                             : _selectedIndex == 1
                                 ? 'Descansar'
                                 : _selectedIndex == 0
